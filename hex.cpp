@@ -13,7 +13,7 @@ void Scroll(int amount)
     row_offset += amount;
 
     // clamp to end of bytes
-    int total_row_count = byte_count / 16;
+    int total_row_count = (byte_count-1) / 16;
     if (row_offset > total_row_count)
     {
         row_offset = total_row_count;
