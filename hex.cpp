@@ -4,6 +4,8 @@
 using byte = unsigned char;
 using uint = unsigned int;
 
+size_t max_rows = 20;
+
 uint byte_count = 0;
 byte *bytes = nullptr;
 int row_offset = 0;
@@ -37,6 +39,27 @@ void HandleInput()
     if (IsKeyPressed(KEY_UP))
     {
         Scroll(-1);
+    }
+
+    if (IsKeyPressed(KEY_HOME))
+    {
+        row_offset = 0;
+    }
+
+    if (IsKeyPressed(KEY_END))
+    {
+        int total_row_count = (byte_count - 1) / 16;
+        row_offset = total_row_count;
+    }
+
+    if (IsKeyPressed(KEY_PAGE_UP))
+    {
+        Scroll(-max_rows);
+    }
+
+    if (IsKeyPressed(KEY_PAGE_DOWN))
+    {
+        Scroll(max_rows);
     }
 
     scroll_offset_buffer += -5 * GetMouseWheelMove();
@@ -95,7 +118,6 @@ void main()
 
         if (bytes)
         {
-            size_t max_rows = 20;
             size_t max = 16 * max_rows;
             size_t offset = row_offset * 16;
             size_t bytes_left_to_display = (byte_count - offset);
