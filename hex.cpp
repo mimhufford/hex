@@ -105,7 +105,7 @@ void HandleDroppedFile()
 
 void main()
 {
-    InitWindow(960, 494, "Hex");
+    InitWindow(956, 494, "Hex");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
@@ -144,7 +144,19 @@ void main()
                     char address[8] = {};
                     sprintf(address, "%07x", (i + offset) / 16);
                     DrawText(address, x, y, font_size, GRAY);
+
+                    char text[17] = {};
+                    for (size_t c = 0; c < 16; c++)
+                    {
+                        size_t index = c + i + offset;
+                        if (index < byte_count)
+                        {
+                            text[c] = (bytes[index] >= 32 && bytes[index] <= 126) ? bytes[index] : '.';
+                        }
+                    }
+                    DrawText(text, 758, y, font_size, GRAY);
                 }
+
                 DrawText(hex, x + 100, y, font_size, BLACK);
             }
         }
