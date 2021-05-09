@@ -105,7 +105,7 @@ void HandleDroppedFile()
 
 void main()
 {
-    InitWindow(956, 494, "Hex");
+    InitWindow(1060, 738, "Hex");
     SetTargetFPS(60);
 
     // @TODO: load from a byte buffer so exe has no dependencies
@@ -133,12 +133,12 @@ void main()
                 hex[0] = hex_chars[(bytes[i + offset] & 0xF0) >> 4];
                 hex[1] = hex_chars[(bytes[i + offset] & 0x0F) >> 0];
 
-                int font_size = 20;
+                int font_size = 32;
                 int horizontal_separator = 8;
                 int vertical_spacing = 4;
                 int left_padding = 10;
                 int top_padding = 10;
-                float x = left_padding + (i % 16) * (font_size * 2);
+                float x = left_padding + (i % 16) * (font_size * 1.3f);
                 x += (i % 16 > 7) ? horizontal_separator : 0;
                 float y = top_padding + (i / 16) * (font_size + vertical_spacing);
 
@@ -157,10 +157,10 @@ void main()
                             text[c] = (bytes[index] >= 32 && bytes[index] <= 126) ? bytes[index] : '.';
                         }
                     }
-                    DrawTextEx(font, text, {758, y}, font_size, 0, GRAY);
+                    DrawTextEx(font, text, {810, y}, font_size, 0, GRAY);
                 }
 
-                DrawTextEx(font, hex, {(float)x + 100, (float)y}, font_size, 0, BLACK);
+                DrawTextEx(font, hex, {(float)x + 121, (float)y}, font_size, 0, BLACK);
             }
         }
 
