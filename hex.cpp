@@ -64,7 +64,7 @@ void HandleInput()
 
     scroll_offset_buffer += -5 * GetMouseWheelMove();
 
-    while (scroll_offset_buffer < 1.0f)
+    while (scroll_offset_buffer < -1.0f)
     {
         scroll_offset_buffer += 1.0f;
         Scroll(-1);
