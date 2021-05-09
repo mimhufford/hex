@@ -6,6 +6,7 @@ using uint = unsigned int;
 uint byte_count = 0;
 byte *bytes = nullptr;
 int row_offset = 0;
+float scroll_offset_buffer = 0;
 
 void Scroll(int amount)
 {
@@ -30,7 +31,18 @@ void HandleInput()
         Scroll(-1);
     }
 
-    Scroll(5 * GetMouseWheelMove());
+    scroll_offset_buffer += 5 * GetMouseWheelMove();
+
+    while (scroll_offset_buffer < 1.0f)
+    {
+        scroll_offset_buffer += 1.0f;
+        Scroll(-1);
+    }
+    while (scroll_offset_buffer > 1.0f)
+    {
+        scroll_offset_buffer -= 1.0f;
+        Scroll(1);
+    }
 }
 
 void HandleDroppedFile()
