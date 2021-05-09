@@ -105,7 +105,7 @@ void HandleDroppedFile()
 
 void main()
 {
-    InitWindow(960, 600, "Hex");
+    InitWindow(960, 494, "Hex");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
