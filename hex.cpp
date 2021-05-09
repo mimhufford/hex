@@ -38,7 +38,7 @@ void HandleInput()
         Scroll(-1);
     }
 
-    scroll_offset_buffer += 5 * GetMouseWheelMove();
+    scroll_offset_buffer += -5 * GetMouseWheelMove();
 
     while (scroll_offset_buffer < 1.0f)
     {
