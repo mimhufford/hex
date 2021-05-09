@@ -136,7 +136,7 @@ void HandleDroppedFile()
 
 void main()
 {
-    InitWindow(1060, 738, "Hex");
+    InitWindow(1060, 900, "Hex");
     SetTargetFPS(60);
 
     // @TODO: load from a byte buffer so exe has no dependencies
@@ -157,6 +157,9 @@ void main()
             size_t bytes_left_to_display = (byte_count - offset);
             size_t count = bytes_left_to_display > max ? max : bytes_left_to_display;
 
+            int font_size = 32;
+            float left_padding = 10;
+
             for (size_t i = 0; i < count; i++)
             {
                 char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -164,10 +167,8 @@ void main()
                 hex[0] = hex_chars[(bytes[i + offset] & 0xF0) >> 4];
                 hex[1] = hex_chars[(bytes[i + offset] & 0x0F) >> 0];
 
-                int font_size = 32;
                 int horizontal_separator = 8;
                 int vertical_spacing = 4;
-                int left_padding = 10;
                 int top_padding = 10;
                 float x = left_padding + (i % 16) * (font_size * 1.3f);
                 x += (i % 16 > 7) ? horizontal_separator : 0;
@@ -194,6 +195,24 @@ void main()
                 Color byte_colour = (i % 16 == selected_col && i / 16 == selected_row) ? RED : BLACK;
                 DrawTextEx(font, hex, {(float)x + 121, (float)y}, font_size, 0, byte_colour);
             }
+
+            char text[50] = {};
+            float x = left_padding + font_size / 2;
+            float y = 750;
+            void *data = &bytes[selected_row * 16 + offset + selected_col];
+            sprintf(text, " int8: %d", *((byte *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            y += font_size;
+            sprintf(text, "int16: %d", *((short *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            y += font_size;
+            sprintf(text, "int32: %d", *((int *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            y += font_size;
+            sprintf(text, "int64: %lld", *((long long *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+
+            // @TODO: display address, uints, floats, maybe string?
         }
 
         EndDrawing();
