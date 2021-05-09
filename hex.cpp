@@ -8,6 +8,8 @@ size_t max_rows = 20;
 
 uint byte_count = 0;
 byte *bytes = nullptr;
+int selected_row = 0;
+int selected_col = 0;
 int row_offset = 0;
 float scroll_offset_buffer = 0;
 
@@ -31,14 +33,41 @@ void Scroll(int amount)
 
 void HandleInput()
 {
-    if (IsKeyPressed(KEY_DOWN))
+    if (IsKeyDown(KEY_LEFT_CONTROL))
     {
-        Scroll(1);
+        if (IsKeyPressed(KEY_DOWN))
+        {
+            Scroll(1);
+        }
+        if (IsKeyPressed(KEY_UP))
+        {
+            Scroll(-1);
+        }
     }
 
-    if (IsKeyPressed(KEY_UP))
+    if (IsKeyUp(KEY_LEFT_CONTROL))
     {
-        Scroll(-1);
+        if (IsKeyPressed(KEY_DOWN))
+        {
+            // @TODO: check col, might be moving to last column which could be shorter
+            // @TODO: if on last row and there are more left then Scroll(1);
+            selected_row = (selected_row < max_rows - 1) ? selected_row + 1 : selected_row;
+        }
+        if (IsKeyPressed(KEY_UP))
+        {
+            // @TODO: if on first row and there are more before then Scroll(-1);
+            selected_row = (selected_row > 0) ? selected_row - 1 : selected_row;
+        }
+        if (IsKeyPressed(KEY_LEFT))
+        {
+            // @TODO: loop back to previous row
+            selected_col = (selected_col > 0) ? selected_col - 1 : selected_col;
+        }
+        if (IsKeyPressed(KEY_RIGHT))
+        {
+            // @TODO: loop around to next row
+            selected_col = (selected_col < 15) ? selected_col + 1 : selected_col;
+        }
     }
 
     if (IsKeyPressed(KEY_HOME))
@@ -98,6 +127,8 @@ void HandleDroppedFile()
 
         bytes = LoadFileData(file_paths[0], &byte_count);
         row_offset = 0;
+        selected_row = 0;
+        selected_col = 0;
     }
 
     ClearDroppedFiles();
@@ -160,7 +191,8 @@ void main()
                     DrawTextEx(font, text, {810, y}, font_size, 0, GRAY);
                 }
 
-                DrawTextEx(font, hex, {(float)x + 121, (float)y}, font_size, 0, BLACK);
+                Color byte_colour = (i % 16 == selected_col && i / 16 == selected_row) ? RED : BLACK;
+                DrawTextEx(font, hex, {(float)x + 121, (float)y}, font_size, 0, byte_colour);
             }
         }
 
