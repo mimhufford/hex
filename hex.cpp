@@ -5,7 +5,60 @@ using uint = unsigned int;
 
 uint byte_count = 0;
 byte *bytes = nullptr;
-uint row_offset = 0;
+int row_offset = 0;
+
+void Scroll(int amount)
+{
+    // @TODO: limit to end of bytes
+    row_offset += amount;
+
+    if (row_offset < 0)
+    {
+        row_offset = 0;
+    }
+}
+
+void HandleInput()
+{
+    if (IsKeyPressed(KEY_DOWN))
+    {
+        Scroll(1);
+    }
+
+    if (IsKeyPressed(KEY_UP))
+    {
+        Scroll(-1);
+    }
+
+    Scroll(5 * GetMouseWheelMove());
+}
+
+void HandleDroppedFile()
+{
+    if (!IsFileDropped())
+        return;
+
+    int file_count;
+    char **file_paths = GetDroppedFiles(&file_count);
+
+    if (file_count > 1)
+    {
+        // @TODO: display error message
+    }
+    else
+    {
+        if (bytes)
+        {
+            // make sure to free any previously loaded file
+            MemFree(bytes);
+        }
+
+        bytes = LoadFileData(file_paths[0], &byte_count);
+        row_offset = 0;
+    }
+
+    ClearDroppedFiles();
+}
 
 void main()
 {
@@ -14,40 +67,8 @@ void main()
 
     while (!WindowShouldClose())
     {
-        if (IsFileDropped())
-        {
-            int file_count;
-            char **file_paths = GetDroppedFiles(&file_count);
-
-            if (file_count > 1)
-            {
-                // @TODO: display error message
-            }
-            else
-            {
-                if (bytes)
-                {
-                    // make sure to free any previously loaded file
-                    MemFree(bytes);
-                }
-
-                bytes = LoadFileData(file_paths[0], &byte_count);
-                row_offset = 0;
-            }
-
-            ClearDroppedFiles();
-        }
-
-        if (IsKeyPressed(KEY_DOWN))
-        {
-            // @TODO: limit to end of bytes
-            row_offset += 1;
-        }
-
-        if (IsKeyPressed(KEY_UP))
-        {
-            row_offset = (row_offset > 0) ? row_offset - 1 : row_offset;
-        }
+        HandleDroppedFile();
+        HandleInput();
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
