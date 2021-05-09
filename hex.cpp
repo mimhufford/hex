@@ -3,8 +3,9 @@
 using byte = unsigned char;
 using uint = unsigned int;
 
-uint byte_count;
+uint byte_count = 0;
 byte *bytes = nullptr;
+uint row_offset = 0;
 
 void main()
 {
@@ -31,9 +32,21 @@ void main()
                 }
 
                 bytes = LoadFileData(file_paths[0], &byte_count);
+                row_offset = 0;
             }
 
             ClearDroppedFiles();
+        }
+
+        if (IsKeyPressed(KEY_DOWN))
+        {
+            // @TODO: limit to end of bytes
+            row_offset += 1;
+        }
+
+        if (IsKeyPressed(KEY_UP))
+        {
+            row_offset = (row_offset > 0) ? row_offset - 1 : row_offset;
         }
 
         BeginDrawing();
@@ -43,14 +56,16 @@ void main()
         {
             size_t max_rows = 20;
             size_t max = 16 * max_rows;
-            size_t count = byte_count > max ? max : byte_count;
+            size_t offset = row_offset * 16;
+            size_t bytes_left_to_display = (byte_count - offset);
+            size_t count = bytes_left_to_display > max ? max : bytes_left_to_display;
 
             for (size_t i = 0; i < count; i++)
             {
                 char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
                 char hex[3] = {};
-                hex[0] = hex_chars[(bytes[i] & 0xF0) >> 4];
-                hex[1] = hex_chars[(bytes[i] & 0x0F) >> 0];
+                hex[0] = hex_chars[(bytes[i + offset] & 0xF0) >> 4];
+                hex[1] = hex_chars[(bytes[i + offset] & 0x0F) >> 0];
 
                 int font_size = 20;
                 int horizontal_spacing = 0;
