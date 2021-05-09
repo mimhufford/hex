@@ -108,6 +108,9 @@ void main()
     InitWindow(956, 494, "Hex");
     SetTargetFPS(60);
 
+    // @TODO: load from a byte buffer so exe has no dependencies
+    Font font = LoadFont("font.ttf");
+
     while (!WindowShouldClose())
     {
         HandleDroppedFile();
@@ -135,15 +138,15 @@ void main()
                 int vertical_spacing = 4;
                 int left_padding = 10;
                 int top_padding = 10;
-                int x = left_padding + (i % 16) * (font_size * 2);
+                float x = left_padding + (i % 16) * (font_size * 2);
                 x += (i % 16 > 7) ? horizontal_separator : 0;
-                int y = top_padding + (i / 16) * (font_size + vertical_spacing);
+                float y = top_padding + (i / 16) * (font_size + vertical_spacing);
 
                 if (i % 16 == 0)
                 {
                     char address[8] = {};
                     sprintf(address, "%07x", (i + offset) / 16);
-                    DrawText(address, x, y, font_size, GRAY);
+                    DrawTextEx(font, address, {x, y}, font_size, 0, GRAY);
 
                     char text[17] = {};
                     for (size_t c = 0; c < 16; c++)
@@ -154,10 +157,10 @@ void main()
                             text[c] = (bytes[index] >= 32 && bytes[index] <= 126) ? bytes[index] : '.';
                         }
                     }
-                    DrawText(text, 758, y, font_size, GRAY);
+                    DrawTextEx(font, text, {758, y}, font_size, 0, GRAY);
                 }
 
-                DrawText(hex, x + 100, y, font_size, BLACK);
+                DrawTextEx(font, hex, {(float)x + 100, (float)y}, font_size, 0, BLACK);
             }
         }
 
