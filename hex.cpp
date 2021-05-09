@@ -145,7 +145,7 @@ void main()
                 if (i % 16 == 0)
                 {
                     char address[8] = {};
-                    sprintf(address, "%07x", (i + offset) / 16);
+                    sprintf(address, "%07x", i + offset);
                     DrawTextEx(font, address, {x, y}, font_size, 0, GRAY);
 
                     char text[17] = {};
