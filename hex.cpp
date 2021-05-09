@@ -109,12 +109,13 @@ void main()
                 hex[1] = hex_chars[(bytes[i + offset] & 0x0F) >> 0];
 
                 int font_size = 20;
-                int horizontal_spacing = 0;
-                int horizontal_separator = 20;
+                int horizontal_separator = 8;
                 int vertical_spacing = 4;
                 int left_padding = 10;
-                int x = left_padding + (i % 16) * (font_size * 2) + ((i % 16) > 7 ? horizontal_separator : 0);
-                int y = i / 16 * (font_size + vertical_spacing);
+                int top_padding = 10;
+                int x = left_padding + (i % 16) * (font_size * 2);
+                x += (i % 16 > 7) ? horizontal_separator : 0;
+                int y = top_padding + (i / 16) * (font_size + vertical_spacing);
 
                 if (i % 16 == 0)
                 {
@@ -122,7 +123,7 @@ void main()
                     sprintf(address, "%07x", (i + offset) / 16);
                     DrawText(address, x, y, font_size, GRAY);
                 }
-                DrawText(hex, x + 120, y, font_size, BLACK);
+                DrawText(hex, x + 100, y, font_size, BLACK);
             }
         }
 
