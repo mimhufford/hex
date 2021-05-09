@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "raylib.h"
 
 using byte = unsigned char;
@@ -13,11 +14,11 @@ void Scroll(int amount)
     row_offset += amount;
 
     // clamp to end of bytes
-    int total_row_count = (byte_count-1) / 16;
+    int total_row_count = (byte_count - 1) / 16;
     if (row_offset > total_row_count)
     {
         row_offset = total_row_count;
-    } 
+    }
 
     // clamp to start of bytes
     if (row_offset < 0)
@@ -81,7 +82,7 @@ void HandleDroppedFile()
 
 void main()
 {
-    InitWindow(800, 600, "Hex");
+    InitWindow(960, 600, "Hex");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
@@ -111,10 +112,17 @@ void main()
                 int horizontal_spacing = 0;
                 int horizontal_separator = 20;
                 int vertical_spacing = 4;
-                int x = (i % 16) * (font_size * 2) + ((i % 16) > 7 ? horizontal_separator : 0);
+                int left_padding = 10;
+                int x = left_padding + (i % 16) * (font_size * 2) + ((i % 16) > 7 ? horizontal_separator : 0);
                 int y = i / 16 * (font_size + vertical_spacing);
 
-                DrawText(hex, x, y, font_size, BLACK);
+                if (i % 16 == 0)
+                {
+                    char address[8] = {};
+                    sprintf(address, "%07x", (i + offset) / 16);
+                    DrawText(address, x, y, font_size, GRAY);
+                }
+                DrawText(hex, x + 120, y, font_size, BLACK);
             }
         }
 
