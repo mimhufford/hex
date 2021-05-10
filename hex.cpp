@@ -50,12 +50,20 @@ void HandleInput()
         if (IsKeyPressed(KEY_DOWN))
         {
             // @TODO: check col, might be moving to last column which could be shorter
-            // @TODO: if on last row and there are more left then Scroll(1);
+            // @TODO: this does scroll down but it gets a bit messy at the end of the file
+            int total_row_count = (byte_count - 1) / 16;
+            if (selected_row == max_rows - 1 && row_offset < total_row_count)
+            {
+                Scroll(1);
+            }
             selected_row = (selected_row < max_rows - 1) ? selected_row + 1 : selected_row;
         }
         if (IsKeyPressed(KEY_UP))
         {
-            // @TODO: if on first row and there are more before then Scroll(-1);
+            if (selected_row == 0 && row_offset > 0)
+            {
+                Scroll(-1);
+            }
             selected_row = (selected_row > 0) ? selected_row - 1 : selected_row;
         }
         if (IsKeyPressed(KEY_LEFT))
