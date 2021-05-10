@@ -113,6 +113,27 @@ void HandleInput()
     }
 }
 
+void LoadFile(char *filepath)
+{
+    if (FileExists(filepath))
+    {
+        if (bytes)
+        {
+            // make sure to free any previously loaded file
+            MemFree(bytes);
+        }
+
+        bytes = LoadFileData(filepath, &byte_count);
+        row_offset = 0;
+        selected_row = 0;
+        selected_col = 0;
+    }
+    else
+    {
+        // @TODO: display error message
+    }
+}
+
 void HandleDroppedFile()
 {
     if (!IsFileDropped())
@@ -127,23 +148,20 @@ void HandleDroppedFile()
     }
     else
     {
-        if (bytes)
-        {
-            // make sure to free any previously loaded file
-            MemFree(bytes);
-        }
-
-        bytes = LoadFileData(file_paths[0], &byte_count);
-        row_offset = 0;
-        selected_row = 0;
-        selected_col = 0;
+        LoadFile(file_paths[0]);
     }
 
     ClearDroppedFiles();
 }
 
-void main()
+void main(int arg_count, char *args[])
 {
+    // If a file was dropped on to the executable, or provided on the command line
+    if (arg_count == 2)
+    {
+        LoadFile(args[1]);
+    }
+
     InitWindow(1060, 900, "Hex");
     SetTargetFPS(60);
 
