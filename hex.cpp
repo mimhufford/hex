@@ -251,8 +251,11 @@ void main(s32 arg_count, char *args[])
 
             char text[50] = {};
             f32 x = glyph_width;
-            f32 y = 750;
+            f32 y = 760;
             void *data = &bytes[selected_row * 16 + offset + selected_col];
+
+            sprintf(text, "Address: %07x", offset + selected_row * 16 + selected_col);
+            DrawTextEx(font, text, {x, y - glyph_height}, glyph_height, 0, BLACK);
 
             auto Print = [&]() {
                 DrawTextEx(font, text, {x, y}, glyph_height, 0, BLACK);
@@ -279,7 +282,7 @@ void main(s32 arg_count, char *args[])
             sprintf(text, "uint64: %llu", *((u64 *)data));
             Print();
 
-            // @TODO: display address, floats, maybe string?
+            // @TODO: display floats, maybe string?
         }
 
         EndDrawing();
