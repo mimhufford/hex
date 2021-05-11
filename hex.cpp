@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "raylib.h"
 #include "types.h"
+#include "font.inl"
 
 s32 max_rows = 20;
 
@@ -163,8 +164,8 @@ void main(s32 arg_count, char *args[])
     InitWindow(1060, 900, "Hex");
     SetTargetFPS(60);
 
-    // @TODO: load from a byte buffer so exe has no dependencies
-    Font font = LoadFont("font.ttf");
+    s32 font_size = 32;
+    Font font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, font_size, 0, 0);
 
     while (!WindowShouldClose())
     {
@@ -181,7 +182,6 @@ void main(s32 arg_count, char *args[])
             s32 bytes_left_to_display = (byte_count - offset);
             s32 count = bytes_left_to_display > max ? max : bytes_left_to_display;
 
-            s32 font_size = 32;
             f32 left_padding = 10;
 
             for (s32 i = 0; i < count; i++)

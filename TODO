@@ -1,6 +1,5 @@
 - Better handling of cursor movement
 - Error messages
-- Bundle font into executable,
 - Display cursor address
 - Display floating point representations
 - Clamp displayed bytes to end of the file
