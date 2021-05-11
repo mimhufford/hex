@@ -3,47 +3,53 @@
 #include "types.h"
 #include "font.inl"
 
-const s32 default_font_size = 32;
-Font font = {}; // will be initialised at startup
-s32 glyph_height = 0; // will be initialised on font load
-s32 glyph_width = 0; // will be initialised on font load
+struct {
+    const s32 default_size = 32;
+    Font font = {}; // will be initialised at startup
+    s32 height = 0; // will be initialised on font load
+    s32 width = 0;  // will be initialised on font load
+} font;
 
-u32 byte_count = 0;
-byte *bytes = nullptr;
+struct {
+    byte *bytes = nullptr;
+    u32 byte_count = 0;
+} loaded_file;
 
-s32 selected_row = 0;
-s32 selected_col = 0;
+struct {
+    s32 row = 0;
+    s32 col = 0;
+} cursor;
 
-s32 max_rows = 20;
-s32 row_offset = 0;
-f32 scroll_offset_buffer = 0;
+struct {
+    const s32 max_rows = 20;
+    s32 row_offset = 0;
+    f32 scroll_offset_buffer = 0;
+} view;
+
+struct {
+    const s32 window_padding = 10;
+} canvas;
 
 void Scroll(s32 amount)
 {
-    row_offset += amount;
+    view.row_offset += amount;
 
     // clamp to end of bytes
-    s32 total_row_count = (byte_count - 1) / 16;
-    if (row_offset > total_row_count)
-    {
-        row_offset = total_row_count;
-    }
+    s32 total_row_count = (loaded_file.byte_count - 1) / 16;
+    if (view.row_offset > total_row_count) view.row_offset = total_row_count;
 
     // clamp to start of bytes
-    if (row_offset < 0)
-    {
-        row_offset = 0;
-    }
+    if (view.row_offset < 0) view.row_offset = 0;
 }
 
 void SetFontSize(s32 height)
 {
     if (height <  8) height = 8;
     if (height > 48) height = 48;
-    font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, height, 0, 0);
-    auto size = MeasureTextEx(font, " ", height, 0);
-    glyph_height = size.y;
-    glyph_width = size.x;
+    font.font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, height, 0, 0);
+    auto size = MeasureTextEx(font.font, " ", height, 0);
+    font.height = size.y;
+    font.width = size.x;
 }
 
 void HandleInput()
@@ -51,19 +57,19 @@ void HandleInput()
     // zoom in
     if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_EQUAL))
     {
-        SetFontSize(glyph_height + 1);
+        SetFontSize(font.height + 1);
     }
 
     // zoom out
     if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_MINUS))
     {
-        SetFontSize(glyph_height - 1);
+        SetFontSize(font.height - 1);
     }
 
     // restore default font size
     if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_ZERO))
     {
-        SetFontSize(default_font_size);
+        SetFontSize(font.default_size);
     }
 
     if (IsKeyDown(KEY_LEFT_CONTROL))
@@ -84,64 +90,64 @@ void HandleInput()
         {
             // @TODO: check col, might be moving to last column which could be shorter
             // @TODO: this does scroll down but it gets a bit messy at the end of the file
-            s32 total_row_count = (byte_count - 1) / 16;
-            if (selected_row == max_rows - 1 && row_offset < total_row_count)
+            s32 total_row_count = (loaded_file.byte_count - 1) / 16;
+            if (cursor.row == view.max_rows - 1 && view.row_offset < total_row_count)
             {
                 Scroll(1);
             }
-            selected_row = (selected_row < max_rows - 1) ? selected_row + 1 : selected_row;
+            cursor.row = (cursor.row < view.max_rows - 1) ? cursor.row + 1 : cursor.row;
         }
         if (IsKeyPressed(KEY_UP))
         {
-            if (selected_row == 0 && row_offset > 0)
+            if (cursor.row == 0 && view.row_offset > 0)
             {
                 Scroll(-1);
             }
-            selected_row = (selected_row > 0) ? selected_row - 1 : selected_row;
+            cursor.row = (cursor.row > 0) ? cursor.row - 1 : cursor.row;
         }
         if (IsKeyPressed(KEY_LEFT))
         {
             // @TODO: loop back to previous row
-            selected_col = (selected_col > 0) ? selected_col - 1 : selected_col;
+            cursor.col = (cursor.col > 0) ? cursor.col - 1 : cursor.col;
         }
         if (IsKeyPressed(KEY_RIGHT))
         {
             // @TODO: loop around to next row
-            selected_col = (selected_col < 15) ? selected_col + 1 : selected_col;
+            cursor.col = (cursor.col < 15) ? cursor.col + 1 : cursor.col;
         }
     }
 
     if (IsKeyPressed(KEY_HOME))
     {
-        row_offset = 0;
+        view.row_offset = 0;
     }
 
     if (IsKeyPressed(KEY_END))
     {
-        s32 total_row_count = (byte_count - 1) / 16;
-        row_offset = total_row_count;
+        s32 total_row_count = (loaded_file.byte_count - 1) / 16;
+        view.row_offset = total_row_count;
     }
 
     if (IsKeyPressed(KEY_PAGE_UP))
     {
-        Scroll(-max_rows);
+        Scroll(-view.max_rows);
     }
 
     if (IsKeyPressed(KEY_PAGE_DOWN))
     {
-        Scroll(max_rows);
+        Scroll(view.max_rows);
     }
 
-    scroll_offset_buffer += -5 * GetMouseWheelMove();
+    view.scroll_offset_buffer += -5 * GetMouseWheelMove();
 
-    while (scroll_offset_buffer < -1.0f)
+    while (view.scroll_offset_buffer < -1.0f)
     {
-        scroll_offset_buffer += 1.0f;
+        view.scroll_offset_buffer += 1.0f;
         Scroll(-1);
     }
-    while (scroll_offset_buffer > 1.0f)
+    while (view.scroll_offset_buffer > 1.0f)
     {
-        scroll_offset_buffer -= 1.0f;
+        view.scroll_offset_buffer -= 1.0f;
         Scroll(1);
     }
 }
@@ -150,16 +156,16 @@ void LoadFile(char *filepath)
 {
     if (FileExists(filepath))
     {
-        if (bytes)
+        if (loaded_file.bytes)
         {
             // make sure to free any previously loaded file
-            MemFree(bytes);
+            MemFree(loaded_file.bytes);
         }
 
-        bytes = LoadFileData(filepath, &byte_count);
-        row_offset = 0;
-        selected_row = 0;
-        selected_col = 0;
+        loaded_file.bytes = LoadFileData(filepath, &loaded_file.byte_count);
+        view.row_offset = 0;
+        cursor.row = 0;
+        cursor.col = 0;
     }
     else
     {
@@ -169,8 +175,7 @@ void LoadFile(char *filepath)
 
 void HandleDroppedFile()
 {
-    if (!IsFileDropped())
-        return;
+    if (!IsFileDropped()) return;
 
     s32 file_count;
     char **file_paths = GetDroppedFiles(&file_count);
@@ -197,7 +202,7 @@ void main(s32 arg_count, char *args[])
 
     InitWindow(1060, 900, "Hex");
     SetTargetFPS(60);
-    SetFontSize(default_font_size);
+    SetFontSize(font.default_size);
 
     while (!WindowShouldClose())
     {
@@ -207,59 +212,59 @@ void main(s32 arg_count, char *args[])
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        if (bytes)
+        if (loaded_file.bytes)
         {
-            s32 max = 16 * max_rows;
-            s32 offset = row_offset * 16;
-            s32 bytes_left_to_display = (byte_count - offset);
+            s32 max = 16 * view.max_rows;
+            s32 offset = view.row_offset * 16;
+            s32 bytes_left_to_display = (loaded_file.byte_count - offset);
             s32 count = bytes_left_to_display > max ? max : bytes_left_to_display;
 
             for (s32 i = 0; i < count; i++)
             {
                 char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
                 char hex[3] = {};
-                hex[0] = hex_chars[(bytes[i + offset] & 0xF0) >> 4];
-                hex[1] = hex_chars[(bytes[i + offset] & 0x0F) >> 0];
+                hex[0] = hex_chars[(loaded_file.bytes[i + offset] & 0xF0) >> 4];
+                hex[1] = hex_chars[(loaded_file.bytes[i + offset] & 0x0F) >> 0];
 
                 s32 horizontal_separator = 8;
                 s32 vertical_spacing = 4;
-                f32 x = glyph_width + (i % 16) * (glyph_width * 2.5f);
+                f32 x = font.width + (i % 16) * (font.width * 2.5f);
                 x += (i % 16 > 7) ? horizontal_separator : 0;
-                f32 y = glyph_width + (i / 16) * (glyph_height + vertical_spacing);
+                f32 y = font.width + (i / 16) * (font.height + vertical_spacing);
 
                 if (i % 16 == 0)
                 {
                     char address[8] = {};
                     sprintf(address, "%07x", i + offset);
-                    DrawTextEx(font, address, {x, y}, glyph_height, 0, GRAY);
+                    DrawTextEx(font.font, address, {x, y}, font.height, 0, GRAY);
 
                     char text[17] = {};
                     for (s32 c = 0; c < 16; c++)
                     {
                         s32 index = c + i + offset;
-                        if (index < byte_count)
+                        if (index < loaded_file.byte_count)
                         {
-                            text[c] = (bytes[index] >= 32 && bytes[index] <= 126) ? bytes[index] : '.';
+                            text[c] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
                         }
                     }
-                    DrawTextEx(font, text, {810, y}, glyph_height, 0, GRAY);
+                    DrawTextEx(font.font, text, {810, y}, font.height, 0, GRAY);
                 }
 
-                Color byte_colour = (i % 16 == selected_col && i / 16 == selected_row) ? RED : BLACK;
-                DrawTextEx(font, hex, {(f32)x + 121, (f32)y}, glyph_height, 0, byte_colour);
+                Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
+                DrawTextEx(font.font, hex, {(f32)x + 121, (f32)y}, font.height, 0, byte_colour);
             }
 
             char text[50] = {};
-            f32 x = glyph_width;
+            f32 x = font.width;
             f32 y = 760;
-            void *data = &bytes[selected_row * 16 + offset + selected_col];
+            void *data = &loaded_file.bytes[cursor.row * 16 + offset + cursor.col];
 
-            sprintf(text, "Address: %07x", offset + selected_row * 16 + selected_col);
-            DrawTextEx(font, text, {x, y - glyph_height}, glyph_height, 0, BLACK);
+            sprintf(text, "Address: %07x", offset + cursor.row * 16 + cursor.col);
+            DrawTextEx(font.font, text, {x, y - font.height}, font.height, 0, BLACK);
 
             auto Print = [&]() {
-                DrawTextEx(font, text, {x, y}, glyph_height, 0, BLACK);
-                y += glyph_height;
+                DrawTextEx(font.font, text, {x, y}, font.height, 0, BLACK);
+                y += font.height;
             };
 
             sprintf(text, " int8: %d", *((s8 *)data));
