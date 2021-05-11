@@ -28,6 +28,8 @@ struct {
 
 struct {
     const s32 window_padding = 10;
+    s32 width = 1060;
+    s32 height = 900;
 } canvas;
 
 void Scroll(s32 amount)
@@ -200,7 +202,7 @@ void main(s32 arg_count, char *args[])
         LoadFile(args[1]);
     }
 
-    InitWindow(1060, 900, "Hex");
+    InitWindow(canvas.width, canvas.height, "Hex");
     SetTargetFPS(60);
     SetFontSize(font.default_size);
 
@@ -288,6 +290,14 @@ void main(s32 arg_count, char *args[])
             Print();
 
             // @TODO: display floats, maybe string?
+        }
+        else
+        {
+            auto text = "Drop a file here to display its contents...";
+            auto size = MeasureTextEx(font.font, text, font.height, 0);
+            f32 x = canvas.width / 2 - size.x / 2;
+            f32 y = canvas.height / 2 - size.y / 2;
+            DrawTextEx(font.font, text, {x, y}, font.height, 0, BLACK);
         }
 
         EndDrawing();
