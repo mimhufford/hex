@@ -1,24 +1,22 @@
 #include <stdio.h>
 #include "raylib.h"
+#include "types.h"
 
-using byte = unsigned char;
-using uint = unsigned int;
+s32 max_rows = 20;
 
-size_t max_rows = 20;
-
-uint byte_count = 0;
+u32 byte_count = 0;
 byte *bytes = nullptr;
-int selected_row = 0;
-int selected_col = 0;
-int row_offset = 0;
-float scroll_offset_buffer = 0;
+s32 selected_row = 0;
+s32 selected_col = 0;
+s32 row_offset = 0;
+f32 scroll_offset_buffer = 0;
 
-void Scroll(int amount)
+void Scroll(s32 amount)
 {
     row_offset += amount;
 
     // clamp to end of bytes
-    int total_row_count = (byte_count - 1) / 16;
+    s32 total_row_count = (byte_count - 1) / 16;
     if (row_offset > total_row_count)
     {
         row_offset = total_row_count;
@@ -51,7 +49,7 @@ void HandleInput()
         {
             // @TODO: check col, might be moving to last column which could be shorter
             // @TODO: this does scroll down but it gets a bit messy at the end of the file
-            int total_row_count = (byte_count - 1) / 16;
+            s32 total_row_count = (byte_count - 1) / 16;
             if (selected_row == max_rows - 1 && row_offset < total_row_count)
             {
                 Scroll(1);
@@ -85,7 +83,7 @@ void HandleInput()
 
     if (IsKeyPressed(KEY_END))
     {
-        int total_row_count = (byte_count - 1) / 16;
+        s32 total_row_count = (byte_count - 1) / 16;
         row_offset = total_row_count;
     }
 
@@ -139,7 +137,7 @@ void HandleDroppedFile()
     if (!IsFileDropped())
         return;
 
-    int file_count;
+    s32 file_count;
     char **file_paths = GetDroppedFiles(&file_count);
 
     if (file_count > 1)
@@ -154,7 +152,7 @@ void HandleDroppedFile()
     ClearDroppedFiles();
 }
 
-void main(int arg_count, char *args[])
+void main(s32 arg_count, char *args[])
 {
     // If a file was dropped on to the executable, or provided on the command line
     if (arg_count == 2)
@@ -178,27 +176,27 @@ void main(int arg_count, char *args[])
 
         if (bytes)
         {
-            size_t max = 16 * max_rows;
-            size_t offset = row_offset * 16;
-            size_t bytes_left_to_display = (byte_count - offset);
-            size_t count = bytes_left_to_display > max ? max : bytes_left_to_display;
+            s32 max = 16 * max_rows;
+            s32 offset = row_offset * 16;
+            s32 bytes_left_to_display = (byte_count - offset);
+            s32 count = bytes_left_to_display > max ? max : bytes_left_to_display;
 
-            int font_size = 32;
-            float left_padding = 10;
+            s32 font_size = 32;
+            f32 left_padding = 10;
 
-            for (size_t i = 0; i < count; i++)
+            for (s32 i = 0; i < count; i++)
             {
                 char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
                 char hex[3] = {};
                 hex[0] = hex_chars[(bytes[i + offset] & 0xF0) >> 4];
                 hex[1] = hex_chars[(bytes[i + offset] & 0x0F) >> 0];
 
-                int horizontal_separator = 8;
-                int vertical_spacing = 4;
-                int top_padding = 10;
-                float x = left_padding + (i % 16) * (font_size * 1.3f);
+                s32 horizontal_separator = 8;
+                s32 vertical_spacing = 4;
+                s32 top_padding = 10;
+                f32 x = left_padding + (i % 16) * (font_size * 1.3f);
                 x += (i % 16 > 7) ? horizontal_separator : 0;
-                float y = top_padding + (i / 16) * (font_size + vertical_spacing);
+                f32 y = top_padding + (i / 16) * (font_size + vertical_spacing);
 
                 if (i % 16 == 0)
                 {
@@ -207,9 +205,9 @@ void main(int arg_count, char *args[])
                     DrawTextEx(font, address, {x, y}, font_size, 0, GRAY);
 
                     char text[17] = {};
-                    for (size_t c = 0; c < 16; c++)
+                    for (s32 c = 0; c < 16; c++)
                     {
-                        size_t index = c + i + offset;
+                        s32 index = c + i + offset;
                         if (index < byte_count)
                         {
                             text[c] = (bytes[index] >= 32 && bytes[index] <= 126) ? bytes[index] : '.';
@@ -219,37 +217,37 @@ void main(int arg_count, char *args[])
                 }
 
                 Color byte_colour = (i % 16 == selected_col && i / 16 == selected_row) ? RED : BLACK;
-                DrawTextEx(font, hex, {(float)x + 121, (float)y}, font_size, 0, byte_colour);
+                DrawTextEx(font, hex, {(f32)x + 121, (f32)y}, font_size, 0, byte_colour);
             }
 
             char text[50] = {};
-            float x = left_padding + font_size / 2;
-            float y = 750;
+            f32 x = left_padding + font_size / 2;
+            f32 y = 750;
             void *data = &bytes[selected_row * 16 + offset + selected_col];
-            sprintf(text, " int8: %d", *((char *)data));
+            sprintf(text, " int8: %d", *((s8 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
-            sprintf(text, "int16: %d", *((short *)data));
+            sprintf(text, "int16: %d", *((s16 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
-            sprintf(text, "int32: %d", *((int *)data));
+            sprintf(text, "int32: %d", *((s32 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
-            sprintf(text, "int64: %lld", *((long long *)data));
+            sprintf(text, "int64: %lld", *((s64 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
 
             x = 463;
             y = 750;
-            sprintf(text, " uint8: %u", *((byte *)data));
+            sprintf(text, " uint8: %u", *((u8 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
-            sprintf(text, "uint16: %u", *((unsigned short *)data));
+            sprintf(text, "uint16: %u", *((u16 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
-            sprintf(text, "uint32: %u", *((uint *)data));
+            sprintf(text, "uint32: %u", *((u32 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
-            sprintf(text, "uint64: %llu", *((unsigned long long *)data));
+            sprintf(text, "uint64: %llu", *((u64 *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
 
             // @TODO: display address, floats, maybe string?
