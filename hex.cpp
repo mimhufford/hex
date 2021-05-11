@@ -5,6 +5,8 @@
 
 s32 max_rows = 20;
 
+s32 glyph_height = 32;
+s32 glyph_width = 0; // will be initialised on font load
 u32 byte_count = 0;
 byte *bytes = nullptr;
 s32 selected_row = 0;
@@ -164,8 +166,10 @@ void main(s32 arg_count, char *args[])
     InitWindow(1060, 900, "Hex");
     SetTargetFPS(60);
 
-    s32 font_size = 32;
-    Font font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, font_size, 0, 0);
+    Font font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, glyph_height, 0, 0);
+    auto glyph_size = MeasureTextEx(font, " ", glyph_height, 0);
+    glyph_height = glyph_size.y;
+    glyph_width = glyph_size.x;
 
     while (!WindowShouldClose())
     {
@@ -182,8 +186,6 @@ void main(s32 arg_count, char *args[])
             s32 bytes_left_to_display = (byte_count - offset);
             s32 count = bytes_left_to_display > max ? max : bytes_left_to_display;
 
-            f32 left_padding = 10;
-
             for (s32 i = 0; i < count; i++)
             {
                 char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -193,16 +195,15 @@ void main(s32 arg_count, char *args[])
 
                 s32 horizontal_separator = 8;
                 s32 vertical_spacing = 4;
-                s32 top_padding = 10;
-                f32 x = left_padding + (i % 16) * (font_size * 1.3f);
+                f32 x = glyph_width + (i % 16) * (glyph_width * 2.5f);
                 x += (i % 16 > 7) ? horizontal_separator : 0;
-                f32 y = top_padding + (i / 16) * (font_size + vertical_spacing);
+                f32 y = glyph_width + (i / 16) * (glyph_height + vertical_spacing);
 
                 if (i % 16 == 0)
                 {
                     char address[8] = {};
                     sprintf(address, "%07x", i + offset);
-                    DrawTextEx(font, address, {x, y}, font_size, 0, GRAY);
+                    DrawTextEx(font, address, {x, y}, glyph_height, 0, GRAY);
 
                     char text[17] = {};
                     for (s32 c = 0; c < 16; c++)
@@ -213,21 +214,21 @@ void main(s32 arg_count, char *args[])
                             text[c] = (bytes[index] >= 32 && bytes[index] <= 126) ? bytes[index] : '.';
                         }
                     }
-                    DrawTextEx(font, text, {810, y}, font_size, 0, GRAY);
+                    DrawTextEx(font, text, {810, y}, glyph_height, 0, GRAY);
                 }
 
                 Color byte_colour = (i % 16 == selected_col && i / 16 == selected_row) ? RED : BLACK;
-                DrawTextEx(font, hex, {(f32)x + 121, (f32)y}, font_size, 0, byte_colour);
+                DrawTextEx(font, hex, {(f32)x + 121, (f32)y}, glyph_height, 0, byte_colour);
             }
 
             char text[50] = {};
-            f32 x = left_padding + font_size / 2;
+            f32 x = glyph_width;
             f32 y = 750;
             void *data = &bytes[selected_row * 16 + offset + selected_col];
 
             auto Print = [&]() {
-                DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-                y += font_size;
+                DrawTextEx(font, text, {x, y}, glyph_height, 0, BLACK);
+                y += glyph_height;
             };
 
             sprintf(text, " int8: %d", *((s8 *)data));
