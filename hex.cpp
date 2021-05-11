@@ -226,7 +226,7 @@ void main(int arg_count, char *args[])
             float x = left_padding + font_size / 2;
             float y = 750;
             void *data = &bytes[selected_row * 16 + offset + selected_col];
-            sprintf(text, " int8: %d", *((byte *)data));
+            sprintf(text, " int8: %d", *((char *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
             y += font_size;
             sprintf(text, "int16: %d", *((short *)data));
@@ -238,7 +238,21 @@ void main(int arg_count, char *args[])
             sprintf(text, "int64: %lld", *((long long *)data));
             DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
 
-            // @TODO: display address, uints, floats, maybe string?
+            x = 463;
+            y = 750;
+            sprintf(text, " uint8: %u", *((byte *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            y += font_size;
+            sprintf(text, "uint16: %u", *((unsigned short *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            y += font_size;
+            sprintf(text, "uint32: %u", *((uint *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            y += font_size;
+            sprintf(text, "uint64: %llu", *((unsigned long long *)data));
+            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+
+            // @TODO: display address, floats, maybe string?
         }
 
         EndDrawing();
