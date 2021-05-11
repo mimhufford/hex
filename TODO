@@ -6,5 +6,5 @@
 - Better visualisations
 - Mouse support
 - Cache after input to avoid duplicated work
-- Allow font scaling during runtime
+- Automatically size window to match font size
 - Remove magic numbers and rely on monospace font size

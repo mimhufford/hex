@@ -3,14 +3,18 @@
 #include "types.h"
 #include "font.inl"
 
-s32 max_rows = 20;
-
-s32 glyph_height = 32;
+const s32 default_font_size = 32;
+Font font = {}; // will be initialised at startup
+s32 glyph_height = 0; // will be initialised on font load
 s32 glyph_width = 0; // will be initialised on font load
+
 u32 byte_count = 0;
 byte *bytes = nullptr;
+
 s32 selected_row = 0;
 s32 selected_col = 0;
+
+s32 max_rows = 20;
 s32 row_offset = 0;
 f32 scroll_offset_buffer = 0;
 
@@ -32,8 +36,36 @@ void Scroll(s32 amount)
     }
 }
 
+void SetFontSize(s32 height)
+{
+    if (height <  8) height = 8;
+    if (height > 48) height = 48;
+    font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, height, 0, 0);
+    auto size = MeasureTextEx(font, " ", height, 0);
+    glyph_height = size.y;
+    glyph_width = size.x;
+}
+
 void HandleInput()
 {
+    // zoom in
+    if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_EQUAL))
+    {
+        SetFontSize(glyph_height + 1);
+    }
+
+    // zoom out
+    if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_MINUS))
+    {
+        SetFontSize(glyph_height - 1);
+    }
+
+    // restore default font size
+    if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) && IsKeyPressed(KEY_ZERO))
+    {
+        SetFontSize(default_font_size);
+    }
+
     if (IsKeyDown(KEY_LEFT_CONTROL))
     {
         if (IsKeyPressed(KEY_DOWN))
@@ -165,11 +197,7 @@ void main(s32 arg_count, char *args[])
 
     InitWindow(1060, 900, "Hex");
     SetTargetFPS(60);
-
-    Font font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, glyph_height, 0, 0);
-    auto glyph_size = MeasureTextEx(font, " ", glyph_height, 0);
-    glyph_height = glyph_size.y;
-    glyph_width = glyph_size.x;
+    SetFontSize(default_font_size);
 
     while (!WindowShouldClose())
     {

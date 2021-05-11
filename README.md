@@ -29,3 +29,4 @@ Drop a file onto the executable and it will be loaded in Hex.
 - `Up`, `Down`, `Left`, and `Right` move the cursor
 - `Home`, `Pg Up`, `Pg Down`, and `End` move the view
 - `Ctrl+Up` and `Ctrl+Down` move the view by one row
+- `Ctrl+0`, `Ctrl+-`, and `Ctrl+=` control the font size
