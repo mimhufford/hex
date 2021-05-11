@@ -224,31 +224,31 @@ void main(s32 arg_count, char *args[])
             f32 x = left_padding + font_size / 2;
             f32 y = 750;
             void *data = &bytes[selected_row * 16 + offset + selected_col];
+
+            auto Print = [&]() {
+                DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+                y += font_size;
+            };
+
             sprintf(text, " int8: %d", *((s8 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-            y += font_size;
+            Print();
             sprintf(text, "int16: %d", *((s16 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-            y += font_size;
+            Print();
             sprintf(text, "int32: %d", *((s32 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-            y += font_size;
+            Print();
             sprintf(text, "int64: %lld", *((s64 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            Print();
 
             x = 463;
             y = 750;
             sprintf(text, " uint8: %u", *((u8 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-            y += font_size;
+            Print();
             sprintf(text, "uint16: %u", *((u16 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-            y += font_size;
+            Print();
             sprintf(text, "uint32: %u", *((u32 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
-            y += font_size;
+            Print();
             sprintf(text, "uint64: %llu", *((u64 *)data));
-            DrawTextEx(font, text, {x, y}, font_size, 0, BLACK);
+            Print();
 
             // @TODO: display address, floats, maybe string?
         }
