@@ -270,7 +270,7 @@ void main(s32 arg_count, char *args[])
             }
 
             char text[50] = {};
-            f32 x = font.width;
+            f32 x = canvas.window_padding;
             f32 y = canvas.details_panel_top;
             void *data = &loaded_file.bytes[cursor.row * 16 + offset + cursor.col];
 
@@ -291,7 +291,7 @@ void main(s32 arg_count, char *args[])
             sprintf(text, "int64: %lld", *((s64 *)data));
             Print();
 
-            x = 463;
+            x = canvas.window_padding + font.width * 30;
             y = canvas.details_panel_top + font.height;
             sprintf(text, " uint8: %u", *((u8 *)data));
             Print();
