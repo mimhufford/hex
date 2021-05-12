@@ -231,11 +231,6 @@ void main(s32 arg_count, char *args[])
 
             for (s32 i = 0; i < count; i++)
             {
-                char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-                char hex[3] = {};
-                hex[0] = hex_chars[(loaded_file.bytes[i + offset] & 0xF0) >> 4];
-                hex[1] = hex_chars[(loaded_file.bytes[i + offset] & 0x0F) >> 0];
-
                 f32 x = canvas.window_padding + (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
                 f32 y = canvas.window_padding + (i / 16) * (font.height);
 
@@ -244,7 +239,20 @@ void main(s32 arg_count, char *args[])
                     char address[8] = {};
                     sprintf(address, "%07x", i + offset);
                     DrawTextEx(font.font, address, {x, y}, font.height, 0, GRAY);
+                }
 
+                {
+                    char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+                    char hex[3] = {};
+                    hex[0] = hex_chars[(loaded_file.bytes[i + offset] & 0xF0) >> 4];
+                    hex[1] = hex_chars[(loaded_file.bytes[i + offset] & 0x0F) >> 0];
+                    Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
+                    f32 hex_x = x + canvas.window_padding + font.width * 7;
+                    DrawTextEx(font.font, hex, {hex_x, (f32)y}, font.height, 0, byte_colour);
+                }
+
+                if (i % 16 == 0)
+                {
                     char text[17] = {};
                     for (s32 c = 0; c < 16; c++)
                     {
@@ -256,9 +264,6 @@ void main(s32 arg_count, char *args[])
                     }
                     DrawTextEx(font.font, text, {810, y}, font.height, 0, GRAY);
                 }
-
-                Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
-                DrawTextEx(font.font, hex, {(f32)x + 121, (f32)y}, font.height, 0, byte_colour);
             }
 
             char text[50] = {};
