@@ -46,6 +46,7 @@ void Scroll(s32 amount)
 
 void SetFontSize(s32 height)
 {
+    UnloadFont(font.font);
     if (height <  8) height = 8;
     if (height > 48) height = 48;
     font.font = LoadFontFromMemory(".ttf", font_bytes, font_bytes_count, height, 0, 0);
