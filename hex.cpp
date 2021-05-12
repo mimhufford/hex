@@ -58,6 +58,7 @@ void SetFontSize(s32 height)
     // recalculate panel positions and window size
     canvas.window_padding = font.height * 0.5f;
     canvas.details_panel_top = canvas.window_padding + font.height * 20;
+    canvas.width = canvas.window_padding * 2 + font.width * 66;
     canvas.height = canvas.window_padding * 2 + font.height * 25;
     SetWindowSize(canvas.width, canvas.height);
 }
@@ -231,13 +232,13 @@ void main(s32 arg_count, char *args[])
 
             for (s32 i = 0; i < count; i++)
             {
-                f32 x = canvas.window_padding + (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
                 f32 y = canvas.window_padding + (i / 16) * (font.height);
 
                 if (i % 16 == 0)
                 {
                     char address[8] = {};
                     sprintf(address, "%07x", i + offset);
+                    f32 x = canvas.window_padding;
                     DrawTextEx(font.font, address, {x, y}, font.height, 0, GRAY);
                 }
 
@@ -247,8 +248,9 @@ void main(s32 arg_count, char *args[])
                     hex[0] = hex_chars[(loaded_file.bytes[i + offset] & 0xF0) >> 4];
                     hex[1] = hex_chars[(loaded_file.bytes[i + offset] & 0x0F) >> 0];
                     Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
-                    f32 hex_x = x + canvas.window_padding + font.width * 7;
-                    DrawTextEx(font.font, hex, {hex_x, (f32)y}, font.height, 0, byte_colour);
+                    f32 x = canvas.window_padding + font.width * 8;
+                    x += (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
+                    DrawTextEx(font.font, hex, {x, y}, font.height, 0, byte_colour);
                 }
 
                 if (i % 16 == 0)
@@ -262,7 +264,8 @@ void main(s32 arg_count, char *args[])
                             text[c] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
                         }
                     }
-                    DrawTextEx(font.font, text, {810, y}, font.height, 0, GRAY);
+                    f32 x = canvas.window_padding + font.width * 50;
+                    DrawTextEx(font.font, text, {x, y}, font.height, 0, GRAY);
                 }
             }
 
