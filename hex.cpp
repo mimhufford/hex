@@ -27,9 +27,9 @@ struct {
 } view;
 
 struct {
-    char addresses[20][8]; // NOTE: first dimension must match view.max_rows
-    char asciis[20][17];   // NOTE: first dimension must match view.max_rows
-    char bytes[20][16][3]; // NOTE: first dimension must match view.max_rows
+    char addresses[20][8];  // NOTE: first dimension must match view.max_rows
+    char asciis[20][16][2]; // NOTE: first dimension must match view.max_rows
+    char bytes[20][16][3];  // NOTE: first dimension must match view.max_rows
     s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
@@ -64,11 +64,11 @@ void Scroll(s32 amount)
 
             if (index < loaded_file.byte_count)
             {
-                canvas.asciis[i][c] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
+                canvas.asciis[i][c][0] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
             }
             else
             {
-                canvas.asciis[i][c] = 0;
+                canvas.asciis[i][c][0] = 0;
             }
         }
     }
@@ -274,15 +274,14 @@ void main(s32 arg_count, char *args[])
 
                 {
                     Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
+
                     f32 x = canvas.window_padding + font.width * 8;
                     x += (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
                     DrawTextEx(font.font, canvas.bytes[i/16][i%16], {x, y}, font.height, 0, byte_colour);
-                }
 
-                if (i % 16 == 0)
-                {
-                    f32 x = canvas.window_padding + font.width * 50;
-                    DrawTextEx(font.font, canvas.asciis[i/16], {x, y}, font.height, 0, GRAY);
+                    x = canvas.window_padding + font.width * 50;
+                    x += (i % 16) * font.width;
+                    DrawTextEx(font.font, canvas.asciis[i/16][i%16], {x, y}, font.height, 0, byte_colour);
                 }
             }
 

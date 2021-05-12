@@ -5,4 +5,3 @@
 - Better visualisations
 - Mouse support
 - Cache after input to avoid duplicated work
-- Highlight corrosponding byte in the text view
