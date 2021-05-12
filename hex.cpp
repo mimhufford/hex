@@ -27,6 +27,7 @@ struct {
 } view;
 
 struct {
+    char addresses[20][8]; // NOTE: first dimension must match view.max_rows
     s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
@@ -43,6 +44,12 @@ void Scroll(s32 amount)
 
     // clamp to start of bytes
     if (view.row_offset < 0) view.row_offset = 0;
+
+    // generate address text
+    for (int i = 0; i < view.max_rows; i++)
+    {
+        sprintf(canvas.addresses[i], "%07x", i * 16 + view.row_offset * 16);
+    }
 }
 
 void SetFontSize(s32 height)
@@ -177,6 +184,7 @@ void LoadFile(char *filepath)
         view.row_offset = 0;
         cursor.row = 0;
         cursor.col = 0;
+        Scroll(0); // trigger a refresh of the cached text
     }
     else
     {
@@ -236,10 +244,8 @@ void main(s32 arg_count, char *args[])
 
                 if (i % 16 == 0)
                 {
-                    char address[8] = {};
-                    sprintf(address, "%07x", i + offset);
                     f32 x = canvas.window_padding;
-                    DrawTextEx(font.font, address, {x, y}, font.height, 0, GRAY);
+                    DrawTextEx(font.font, canvas.addresses[i/16], {x, y}, font.height, 0, GRAY);
                 }
 
                 {
