@@ -30,6 +30,7 @@ struct {
     char addresses[20][8];  // NOTE: first dimension must match view.max_rows
     char asciis[20][16][2]; // NOTE: first dimension must match view.max_rows
     char bytes[20][16][3];  // NOTE: first dimension must match view.max_rows
+    char values[8][30];
     s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
@@ -72,6 +73,9 @@ void Scroll(s32 amount)
             }
         }
     }
+
+    void MoveCursor(s32, s32);
+    MoveCursor(0, 0); // trigger an int/uint/etc text update
 }
 
 void SetFontSize(s32 height)
@@ -106,6 +110,16 @@ void MoveCursor(s32 dx, s32 dy)
     cursor.row += dy;
     if (cursor.row < 0) cursor.row =  0;
     if (cursor.row >= view.max_rows) cursor.row = view.max_rows - 1;
+
+    void *data = &loaded_file.bytes[cursor.row * 16 + view.row_offset * 16 + cursor.col];
+    sprintf(canvas.values[0], "  int8: %d",   *(( s8 *)data));
+    sprintf(canvas.values[1], " int16: %d",   *((s16 *)data));
+    sprintf(canvas.values[2], " int32: %d",   *((s32 *)data));
+    sprintf(canvas.values[3], " int64: %lld", *((s64 *)data));
+    sprintf(canvas.values[4], " uint8: %u",   *(( u8 *)data));
+    sprintf(canvas.values[5], "uint16: %u",   *((u16 *)data));
+    sprintf(canvas.values[6], "uint32: %u",   *((u32 *)data));
+    sprintf(canvas.values[7], "uint64: %llu", *((u64 *)data));
 }
 
 void HandleInput()
@@ -288,38 +302,12 @@ void main(s32 arg_count, char *args[])
                 }
             }
 
-            char text[50] = {};
-            f32 x = canvas.window_padding;
-            f32 y = canvas.details_panel_top;
-            void *data = &loaded_file.bytes[cursor.row * 16 + offset + cursor.col];
-
-            auto Print = [&]() {
-                DrawTextEx(font.font, text, {x, y}, font.height, 0, BLACK);
-                y += font.height;
+            for (s32 i = 0; i < 8; i++)
+            {
+                f32 x = canvas.window_padding + (i > 3 ? font.width * 30 : 0);
+                f32 y = canvas.details_panel_top + font.height + (i % 4) * font.height;
+                DrawTextEx(font.font, canvas.values[i], {x, y}, font.height, 0, BLACK);
             };
-
-            sprintf(text, "Address: %07x", offset + cursor.row * 16 + cursor.col);
-            Print();
-
-            sprintf(text, " int8: %d", *((s8 *)data));
-            Print();
-            sprintf(text, "int16: %d", *((s16 *)data));
-            Print();
-            sprintf(text, "int32: %d", *((s32 *)data));
-            Print();
-            sprintf(text, "int64: %lld", *((s64 *)data));
-            Print();
-
-            x = canvas.window_padding + font.width * 30;
-            y = canvas.details_panel_top + font.height;
-            sprintf(text, " uint8: %u", *((u8 *)data));
-            Print();
-            sprintf(text, "uint16: %u", *((u16 *)data));
-            Print();
-            sprintf(text, "uint32: %u", *((u32 *)data));
-            Print();
-            sprintf(text, "uint64: %llu", *((u64 *)data));
-            Print();
 
             // @TODO: display floats, maybe string?
         }

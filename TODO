@@ -4,4 +4,3 @@
 - Clamp displayed bytes to end of the file
 - Better visualisations
 - Mouse support
-- Cache after input to avoid duplicated work
