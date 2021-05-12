@@ -27,9 +27,10 @@ struct {
 } view;
 
 struct {
-    const s32 window_padding = 10;
+    s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
+    s32 details_panel_top;
 } canvas;
 
 void Scroll(s32 amount)
@@ -53,6 +54,12 @@ void SetFontSize(s32 height)
     auto size = MeasureTextEx(font.font, " ", height, 0);
     font.height = size.y;
     font.width = size.x;
+
+    // recalculate panel positions and window size
+    canvas.window_padding = font.height * 0.5f;
+    canvas.details_panel_top = canvas.window_padding + font.height * 20;
+    canvas.height = canvas.window_padding * 2 + font.height * 25;
+    SetWindowSize(canvas.width, canvas.height);
 }
 
 void HandleInput()
@@ -229,11 +236,8 @@ void main(s32 arg_count, char *args[])
                 hex[0] = hex_chars[(loaded_file.bytes[i + offset] & 0xF0) >> 4];
                 hex[1] = hex_chars[(loaded_file.bytes[i + offset] & 0x0F) >> 0];
 
-                s32 horizontal_separator = 8;
-                s32 vertical_spacing = 4;
-                f32 x = font.width + (i % 16) * (font.width * 2.5f);
-                x += (i % 16 > 7) ? horizontal_separator : 0;
-                f32 y = font.width + (i / 16) * (font.height + vertical_spacing);
+                f32 x = canvas.window_padding + (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
+                f32 y = canvas.window_padding + (i / 16) * (font.height);
 
                 if (i % 16 == 0)
                 {
@@ -259,16 +263,16 @@ void main(s32 arg_count, char *args[])
 
             char text[50] = {};
             f32 x = font.width;
-            f32 y = 760;
+            f32 y = canvas.details_panel_top;
             void *data = &loaded_file.bytes[cursor.row * 16 + offset + cursor.col];
-
-            sprintf(text, "Address: %07x", offset + cursor.row * 16 + cursor.col);
-            DrawTextEx(font.font, text, {x, y - font.height}, font.height, 0, BLACK);
 
             auto Print = [&]() {
                 DrawTextEx(font.font, text, {x, y}, font.height, 0, BLACK);
                 y += font.height;
             };
+
+            sprintf(text, "Address: %07x", offset + cursor.row * 16 + cursor.col);
+            Print();
 
             sprintf(text, " int8: %d", *((s8 *)data));
             Print();
@@ -280,7 +284,7 @@ void main(s32 arg_count, char *args[])
             Print();
 
             x = 463;
-            y = 750;
+            y = canvas.details_panel_top + font.height;
             sprintf(text, " uint8: %u", *((u8 *)data));
             Print();
             sprintf(text, "uint16: %u", *((u16 *)data));
