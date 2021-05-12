@@ -29,6 +29,7 @@ struct {
 struct {
     char addresses[20][8]; // NOTE: first dimension must match view.max_rows
     char asciis[20][17];   // NOTE: first dimension must match view.max_rows
+    char bytes[20][16][3]; // NOTE: first dimension must match view.max_rows
     s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
@@ -46,7 +47,7 @@ void Scroll(s32 amount)
     // clamp to start of bytes
     if (view.row_offset < 0) view.row_offset = 0;
 
-    // generate address and ascii text
+    // generate address, bytes, and ascii text
     for (s32 i = 0; i < view.max_rows; i++)
     {
         s32 line_base_address = i * 16 + view.row_offset * 16;
@@ -56,6 +57,11 @@ void Scroll(s32 amount)
         for (s32 c = 0; c < 16; c++)
         {
             s32 index = line_base_address + c;
+
+            char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+            canvas.bytes[i][c][0] = hex_chars[(loaded_file.bytes[index] & 0xF0) >> 4];
+            canvas.bytes[i][c][1] = hex_chars[(loaded_file.bytes[index] & 0x0F) >> 0];
+
             if (index < loaded_file.byte_count)
             {
                 canvas.asciis[i][c] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
@@ -267,14 +273,10 @@ void main(s32 arg_count, char *args[])
                 }
 
                 {
-                    char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-                    char hex[3] = {};
-                    hex[0] = hex_chars[(loaded_file.bytes[i + offset] & 0xF0) >> 4];
-                    hex[1] = hex_chars[(loaded_file.bytes[i + offset] & 0x0F) >> 0];
                     Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
                     f32 x = canvas.window_padding + font.width * 8;
                     x += (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
-                    DrawTextEx(font.font, hex, {x, y}, font.height, 0, byte_colour);
+                    DrawTextEx(font.font, canvas.bytes[i/16][i%16], {x, y}, font.height, 0, byte_colour);
                 }
 
                 if (i % 16 == 0)
