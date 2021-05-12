@@ -92,6 +92,22 @@ void SetFontSize(s32 height)
     SetWindowSize(canvas.width, canvas.height);
 }
 
+void MoveCursor(s32 dx, s32 dy)
+{
+    // @TODO: check col when moving down, last row could be shorter
+    // @TODO: scroll when hitting top or bottom
+    // @TODO: loop back to previous row when hitting left edge
+    // @TODO: loop around to next row when hitting right edge
+
+    cursor.col += dx;
+    if (cursor.col <  0) cursor.col =  0;
+    if (cursor.col > 15) cursor.col = 15;
+
+    cursor.row += dy;
+    if (cursor.row < 0) cursor.row =  0;
+    if (cursor.row >= view.max_rows) cursor.row = view.max_rows - 1;
+}
+
 void HandleInput()
 {
     // zoom in
@@ -128,32 +144,19 @@ void HandleInput()
     {
         if (IsKeyPressed(KEY_DOWN))
         {
-            // @TODO: check col, might be moving to last column which could be shorter
-            // @TODO: this does scroll down but it gets a bit messy at the end of the file
-            s32 total_row_count = (loaded_file.byte_count - 1) / 16;
-            if (cursor.row == view.max_rows - 1 && view.row_offset < total_row_count)
-            {
-                Scroll(1);
-            }
-            cursor.row = (cursor.row < view.max_rows - 1) ? cursor.row + 1 : cursor.row;
+            MoveCursor(0, 1);
         }
         if (IsKeyPressed(KEY_UP))
         {
-            if (cursor.row == 0 && view.row_offset > 0)
-            {
-                Scroll(-1);
-            }
-            cursor.row = (cursor.row > 0) ? cursor.row - 1 : cursor.row;
+            MoveCursor(0, -1);
         }
         if (IsKeyPressed(KEY_LEFT))
         {
-            // @TODO: loop back to previous row
-            cursor.col = (cursor.col > 0) ? cursor.col - 1 : cursor.col;
+            MoveCursor(-1, 0);
         }
         if (IsKeyPressed(KEY_RIGHT))
         {
-            // @TODO: loop around to next row
-            cursor.col = (cursor.col < 15) ? cursor.col + 1 : cursor.col;
+            MoveCursor(1, 0);
         }
     }
 
