@@ -28,6 +28,7 @@ struct {
 
 struct {
     char addresses[20][8]; // NOTE: first dimension must match view.max_rows
+    char asciis[20][17];   // NOTE: first dimension must match view.max_rows
     s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
@@ -45,10 +46,25 @@ void Scroll(s32 amount)
     // clamp to start of bytes
     if (view.row_offset < 0) view.row_offset = 0;
 
-    // generate address text
-    for (int i = 0; i < view.max_rows; i++)
+    // generate address and ascii text
+    for (s32 i = 0; i < view.max_rows; i++)
     {
-        sprintf(canvas.addresses[i], "%07x", i * 16 + view.row_offset * 16);
+        s32 line_base_address = i * 16 + view.row_offset * 16;
+
+        sprintf(canvas.addresses[i], "%07x", line_base_address);
+
+        for (s32 c = 0; c < 16; c++)
+        {
+            s32 index = line_base_address + c;
+            if (index < loaded_file.byte_count)
+            {
+                canvas.asciis[i][c] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
+            }
+            else
+            {
+                canvas.asciis[i][c] = 0;
+            }
+        }
     }
 }
 
@@ -138,12 +154,14 @@ void HandleInput()
     if (IsKeyPressed(KEY_HOME))
     {
         view.row_offset = 0;
+        Scroll(0);
     }
 
     if (IsKeyPressed(KEY_END))
     {
         s32 total_row_count = (loaded_file.byte_count - 1) / 16;
         view.row_offset = total_row_count;
+        Scroll(0);
     }
 
     if (IsKeyPressed(KEY_PAGE_UP))
@@ -261,17 +279,8 @@ void main(s32 arg_count, char *args[])
 
                 if (i % 16 == 0)
                 {
-                    char text[17] = {};
-                    for (s32 c = 0; c < 16; c++)
-                    {
-                        s32 index = c + i + offset;
-                        if (index < loaded_file.byte_count)
-                        {
-                            text[c] = (loaded_file.bytes[index] >= 32 && loaded_file.bytes[index] <= 126) ? loaded_file.bytes[index] : '.';
-                        }
-                    }
                     f32 x = canvas.window_padding + font.width * 50;
-                    DrawTextEx(font.font, text, {x, y}, font.height, 0, GRAY);
+                    DrawTextEx(font.font, canvas.asciis[i/16], {x, y}, font.height, 0, GRAY);
                 }
             }
 
