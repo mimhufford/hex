@@ -25,7 +25,6 @@ Add the executable to your path (or navigate to the directory containing the exe
 Drop a file onto the executable and it will be loaded in Hex.
 
 ### Using Hex
-- Drop a file onto the GUI to load it
 - `Up`, `Down`, `Left`, and `Right` move the cursor
 - `Home`, `Pg Up`, `Pg Down`, and `End` move the view
 - `Ctrl+Up` and `Ctrl+Down` move the view by one row
