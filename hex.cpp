@@ -98,10 +98,11 @@ void SetFontSize(s32 height)
 
 void MoveCursor(s32 dx, s32 dy)
 {
-    // @TODO: check col when moving down, last row could be shorter
     // @TODO: scroll when hitting top or bottom
     // @TODO: loop back to previous row when hitting left edge
     // @TODO: loop around to next row when hitting right edge
+
+    s32 max_row_at_current_scroll = loaded_file.byte_count / 16 - view.row_offset;
 
     cursor.col += dx;
     if (cursor.col <  0) cursor.col =  0;
@@ -110,8 +111,16 @@ void MoveCursor(s32 dx, s32 dy)
     cursor.row += dy;
     if (cursor.row < 0) cursor.row =  0;
     if (cursor.row >= view.max_rows) cursor.row = view.max_rows - 1;
+    if (cursor.row > max_row_at_current_scroll) cursor.row = max_row_at_current_scroll;
 
     s32 byte_index = cursor.row * 16 + view.row_offset * 16 + cursor.col;
+
+    while (byte_index >= loaded_file.byte_count)
+    {
+        byte_index -= 1;
+        cursor.col -= 1;
+    }
+    
     s32 bytes_left = loaded_file.byte_count - byte_index;
 
     // generate value strings if there are enough bytes left to do so
