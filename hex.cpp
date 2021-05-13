@@ -27,6 +27,8 @@ struct {
 } view;
 
 struct {
+    const char hex_upper[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    const char hex_lower[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     char addresses[20][8];  // NOTE: first dimension must match view.max_rows
     char asciis[20][16][2]; // NOTE: first dimension must match view.max_rows
     char bytes[20][16][3];  // NOTE: first dimension must match view.max_rows
@@ -36,6 +38,17 @@ struct {
     s32 height = 900;
     s32 details_panel_top;
 } canvas;
+
+void UpdateAddressTexts()
+{
+    for (s32 i = 0; i < view.max_rows; i++)
+    {
+        s32 line_base_address = i * 16 + view.row_offset * 16;
+        sprintf(canvas.addresses[i], "%07x", line_base_address);
+    }
+
+    canvas.addresses[cursor.row][6] = canvas.hex_lower[cursor.col];
+}
 
 void Scroll(s32 amount)
 {
@@ -48,20 +61,18 @@ void Scroll(s32 amount)
     // clamp to start of bytes
     if (view.row_offset < 0) view.row_offset = 0;
 
-    // generate address, bytes, and ascii text
+    UpdateAddressTexts();
+
+    // generate bytes and ascii text
     for (s32 i = 0; i < view.max_rows; i++)
     {
-        s32 line_base_address = i * 16 + view.row_offset * 16;
-
-        sprintf(canvas.addresses[i], "%07x", line_base_address);
-
         for (s32 c = 0; c < 16; c++)
         {
+            s32 line_base_address = i * 16 + view.row_offset * 16;
             s32 index = line_base_address + c;
 
-            char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-            canvas.bytes[i][c][0] = hex_chars[(loaded_file.bytes[index] & 0xF0) >> 4];
-            canvas.bytes[i][c][1] = hex_chars[(loaded_file.bytes[index] & 0x0F) >> 0];
+            canvas.bytes[i][c][0] = canvas.hex_upper[(loaded_file.bytes[index] & 0xF0) >> 4];
+            canvas.bytes[i][c][1] = canvas.hex_upper[(loaded_file.bytes[index] & 0x0F) >> 0];
 
             if (index < loaded_file.byte_count)
             {
@@ -148,6 +159,8 @@ void MoveCursor(s32 dx, s32 dy)
     else                 sprintf(canvas.values[6], "uint32: -");
     if (bytes_left >= 8) sprintf(canvas.values[7], "uint64: %llu", *((u64*)data));
     else                 sprintf(canvas.values[7], "uint64: -");
+
+    UpdateAddressTexts();
 }
 
 void HandleInput()
@@ -322,8 +335,9 @@ void main(s32 arg_count, char *args[])
 
                 if (i % 16 == 0)
                 {
+                    bool selected = (i / 16 == cursor.row);
                     f32 x = canvas.window_padding;
-                    DrawTextEx(font.font, canvas.addresses[i/16], {x, y}, font.height, 0, GRAY);
+                    DrawTextEx(font.font, canvas.addresses[i/16], {x, y}, font.height, 0, selected ? BLACK : GRAY);
                 }
 
                 {
