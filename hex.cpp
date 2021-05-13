@@ -318,14 +318,17 @@ void main(s32 arg_count, char *args[])
                 }
 
                 {
-                    Color byte_colour = (i % 16 == cursor.col && i / 16 == cursor.row) ? RED : BLACK;
+                    bool selected = (i % 16 == cursor.col && i / 16 == cursor.row);
+                    Color byte_colour = selected ? RAYWHITE : BLACK;
 
                     f32 x = canvas.window_padding + font.width * 8;
                     x += (i % 16) * (font.width * 2.5f) + ((i % 16 > 7) ? font.width : 0);
+                    if (selected) DrawRectangle(x-2, y, font.width*2+4, font.height, GRAY);
                     DrawTextEx(font.font, canvas.bytes[i/16][i%16], {x, y}, font.height, 0, byte_colour);
 
                     x = canvas.window_padding + font.width * 50;
                     x += (i % 16) * font.width;
+                    if (selected) DrawRectangle(x-1, y, font.width+2, font.height, GRAY);
                     DrawTextEx(font.font, canvas.asciis[i/16][i%16], {x, y}, font.height, 0, byte_colour);
                 }
             }
