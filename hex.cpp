@@ -111,15 +111,27 @@ void MoveCursor(s32 dx, s32 dy)
     if (cursor.row < 0) cursor.row =  0;
     if (cursor.row >= view.max_rows) cursor.row = view.max_rows - 1;
 
-    void *data = &loaded_file.bytes[cursor.row * 16 + view.row_offset * 16 + cursor.col];
-    sprintf(canvas.values[0], "  int8: %d",   *(( s8 *)data));
-    sprintf(canvas.values[1], " int16: %d",   *((s16 *)data));
-    sprintf(canvas.values[2], " int32: %d",   *((s32 *)data));
-    sprintf(canvas.values[3], " int64: %lld", *((s64 *)data));
-    sprintf(canvas.values[4], " uint8: %u",   *(( u8 *)data));
-    sprintf(canvas.values[5], "uint16: %u",   *((u16 *)data));
-    sprintf(canvas.values[6], "uint32: %u",   *((u32 *)data));
-    sprintf(canvas.values[7], "uint64: %llu", *((u64 *)data));
+    s32 byte_index = cursor.row * 16 + view.row_offset * 16 + cursor.col;
+    s32 bytes_left = loaded_file.byte_count - byte_index;
+
+    // generate value strings if there are enough bytes left to do so
+    void *data = &loaded_file.bytes[byte_index];
+    if (bytes_left >= 1) sprintf(canvas.values[0], "  int8: %d",   *(( s8*)data));
+    else                 sprintf(canvas.values[0], "  int8: -");
+    if (bytes_left >= 2) sprintf(canvas.values[1], " int16: %d",   *((s16*)data));
+    else                 sprintf(canvas.values[1], " int16: -");
+    if (bytes_left >= 4) sprintf(canvas.values[2], " int32: %d",   *((s32*)data));
+    else                 sprintf(canvas.values[2], " int32: -");
+    if (bytes_left >= 8) sprintf(canvas.values[3], " int64: %lld", *((s64*)data));
+    else                 sprintf(canvas.values[3], " int64: -");
+    if (bytes_left >= 1) sprintf(canvas.values[4], " uint8: %u",   *(( u8*)data));
+    else                 sprintf(canvas.values[4], " uint8: -");
+    if (bytes_left >= 2) sprintf(canvas.values[5], "uint16: %u",   *((u16*)data));
+    else                 sprintf(canvas.values[5], "uint16: -");
+    if (bytes_left >= 4) sprintf(canvas.values[6], "uint32: %u",   *((u32*)data));
+    else                 sprintf(canvas.values[6], "uint32: -");
+    if (bytes_left >= 8) sprintf(canvas.values[7], "uint64: %llu", *((u64*)data));
+    else                 sprintf(canvas.values[7], "uint64: -");
 }
 
 void HandleInput()
