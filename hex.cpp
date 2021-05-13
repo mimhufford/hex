@@ -98,20 +98,27 @@ void SetFontSize(s32 height)
 
 void MoveCursor(s32 dx, s32 dy)
 {
-    // @TODO: scroll when hitting top or bottom
     // @TODO: loop back to previous row when hitting left edge
     // @TODO: loop around to next row when hitting right edge
 
     s32 max_row_at_current_scroll = loaded_file.byte_count / 16 - view.row_offset;
+    if (max_row_at_current_scroll >= view.max_rows) max_row_at_current_scroll = view.max_rows - 1;
 
     cursor.col += dx;
     if (cursor.col <  0) cursor.col =  0;
     if (cursor.col > 15) cursor.col = 15;
 
     cursor.row += dy;
-    if (cursor.row < 0) cursor.row =  0;
-    if (cursor.row >= view.max_rows) cursor.row = view.max_rows - 1;
-    if (cursor.row > max_row_at_current_scroll) cursor.row = max_row_at_current_scroll;
+    if (cursor.row < 0)
+    {
+        cursor.row = 0;
+        if (view.row_offset > 0) Scroll(-1);
+    }
+    if (cursor.row > max_row_at_current_scroll)
+    {
+        cursor.row = max_row_at_current_scroll;
+        if (cursor.row + view.row_offset < loaded_file.byte_count / 16) Scroll(1);
+    }
 
     s32 byte_index = cursor.row * 16 + view.row_offset * 16 + cursor.col;
 
