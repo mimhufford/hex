@@ -180,6 +180,15 @@ void HandleInput()
         {
             Scroll(-1);
         }
+        if (IsKeyPressed(KEY_LEFT))
+        {
+            if (cursor.col > 8) MoveCursor(8 - cursor.col, 0);
+            else                MoveCursor(0 - cursor.col, 0);
+        }
+        if (IsKeyPressed(KEY_RIGHT))
+        {
+            if (cursor.col < 8) MoveCursor(8 - cursor.col, 0);
+        }
     }
 
     if (IsKeyUp(KEY_LEFT_CONTROL))
