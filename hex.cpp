@@ -109,15 +109,34 @@ void SetFontSize(s32 height)
 
 void MoveCursor(s32 dx, s32 dy)
 {
-    // @TODO: loop back to previous row when hitting left edge
-    // @TODO: loop around to next row when hitting right edge
-
     s32 max_row_at_current_scroll = (loaded_file.byte_count-1) / 16 - view.row_offset;
     if (max_row_at_current_scroll >= view.max_rows) max_row_at_current_scroll = view.max_rows - 1;
 
     cursor.col += dx;
-    if (cursor.col <  0) cursor.col =  0;
-    if (cursor.col > 15) cursor.col = 15;
+    if (cursor.col < 0)
+    {
+        if (cursor.row == 0 && view.row_offset == 0)
+        {
+            cursor.col = 0;
+        }
+        else
+        {   // gone off left edge, loop back to end of previous row 
+            dy -= 1;
+            cursor.col = 15;
+        }
+    }
+    if (cursor.col > 15)
+    {
+        if (cursor.row >= max_row_at_current_scroll)
+        {
+            cursor.col = 15;
+        }
+        else
+        {   // gone off right edge, loop to start of next row 
+            dy += 1;
+            cursor.col = 0;
+        }
+    }
 
     cursor.row += dy;
     if (cursor.row < 0)
