@@ -32,7 +32,7 @@ struct {
     char addresses[20][8];  // NOTE: first dimension must match view.max_rows
     char asciis[20][16][2]; // NOTE: first dimension must match view.max_rows
     char bytes[20][16][3];  // NOTE: first dimension must match view.max_rows
-    char values[8][30];
+    char values[10][30];
     s32 window_padding;
     s32 width = 1060;
     s32 height = 900;
@@ -151,14 +151,18 @@ void MoveCursor(s32 dx, s32 dy)
     else                 sprintf(canvas.values[2], " int32: -");
     if (bytes_left >= 8) sprintf(canvas.values[3], " int64: %lld", *((s64*)data));
     else                 sprintf(canvas.values[3], " int64: -");
-    if (bytes_left >= 1) sprintf(canvas.values[4], " uint8: %u",   *(( u8*)data));
-    else                 sprintf(canvas.values[4], " uint8: -");
-    if (bytes_left >= 2) sprintf(canvas.values[5], "uint16: %u",   *((u16*)data));
-    else                 sprintf(canvas.values[5], "uint16: -");
-    if (bytes_left >= 4) sprintf(canvas.values[6], "uint32: %u",   *((u32*)data));
-    else                 sprintf(canvas.values[6], "uint32: -");
-    if (bytes_left >= 8) sprintf(canvas.values[7], "uint64: %llu", *((u64*)data));
-    else                 sprintf(canvas.values[7], "uint64: -");
+    if (bytes_left >= 4) sprintf(canvas.values[4], "   f32: %e",   *((f32*)data));
+    else                 sprintf(canvas.values[4], "   f32: -");
+    if (bytes_left >= 1) sprintf(canvas.values[5], " uint8: %u",   *(( u8*)data));
+    else                 sprintf(canvas.values[5], " uint8: -");
+    if (bytes_left >= 2) sprintf(canvas.values[6], "uint16: %u",   *((u16*)data));
+    else                 sprintf(canvas.values[6], "uint16: -");
+    if (bytes_left >= 4) sprintf(canvas.values[7], "uint32: %u",   *((u32*)data));
+    else                 sprintf(canvas.values[7], "uint32: -");
+    if (bytes_left >= 8) sprintf(canvas.values[8], "uint64: %llu", *((u64*)data));
+    else                 sprintf(canvas.values[8], "uint64: -");
+    if (bytes_left >= 8) sprintf(canvas.values[9], "   f64: %e",   *((f64*)data));
+    else                 sprintf(canvas.values[9], "   f64: -");
 
     UpdateAddressTexts();
 }
@@ -356,14 +360,12 @@ void main(s32 arg_count, char *args[])
                 }
             }
 
-            for (s32 i = 0; i < 8; i++)
+            for (s32 i = 0; i < 10; i++)
             {
-                f32 x = canvas.window_padding + (i > 3 ? font.width * 30 : 0);
-                f32 y = canvas.details_panel_top + font.height + (i % 4) * font.height;
+                f32 x = canvas.window_padding + (i > 4 ? font.width * 30 : 0);
+                f32 y = canvas.details_panel_top + (i % 5) * font.height;
                 DrawTextEx(font.font, canvas.values[i], {x, y}, font.height, 0, BLACK);
             };
-
-            // @TODO: display floats, maybe string?
         }
         else
         {
