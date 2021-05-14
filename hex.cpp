@@ -61,8 +61,6 @@ void Scroll(s32 amount)
     // clamp to start of bytes
     if (view.row_offset < 0) view.row_offset = 0;
 
-    UpdateAddressTexts();
-
     // generate bytes and ascii text
     for (s32 i = 0; i < view.max_rows; i++)
     {
