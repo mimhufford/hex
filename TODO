@@ -1,4 +1,3 @@
 - Error messages
-- Create meta program to build in GUI mode, not console
-- Have meta program create font bytes as a build step
+- Have metaprogram build in GUI mode, not console
 - Support dropped file

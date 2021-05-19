@@ -4,7 +4,7 @@ A simple GUI hex viewer developed as a teaching aid.
 ## Build Instructions
 
 ### Windows
-1. Run `jai hex.jai`
+Run `jai build.jai`
 
 ## Usage
 
