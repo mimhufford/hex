@@ -225,3 +225,39 @@ Input :: #import "Input";
 #import "String";
 #import "File";
 #import "Math";
+
+// @HACK: jai isn't currently set up to pipe cli arguments into a graphical
+// application, so this is used to grab the arguments and pipe them into the
+// standard format jai expects; now get_command_line_arguements() works as usual
+#program_export "wWinMain"
+windows_app_entry :: (hinstance : *void, hprev : *void, cmd_line : *u16, cmd_show : s32) -> s32 #c_call
+{
+    __system_entry_point :: (argc : s32, argv : **u8) -> s32 #foreign "main" #compiler;
+
+    shell32 :: #foreign_system_library "Shell32";
+    kernel32 :: #foreign_system_library "Kernel32";
+    CommandLineToArgvW :: (cmd_line : *u16, argc : *s32) -> **u16 #foreign shell32;
+    GetCommandLineW :: () -> *u16 #foreign kernel32;
+    LocalFree :: (mem : *void) -> *void #foreign kernel32;
+    GetProcessHeap :: () -> *void #foreign kernel32;
+    HeapAlloc :: (heap : *void, flags : u32, size : u64) -> *void #foreign kernel32;
+    WideCharToMultiByte :: (CodePage: u32, dwFlags: u32, lpWideCharStr: *u16, cchWideChar: s32, lpMultiByteStr: *u8, cbMultiByte: s32,lpDefaultChar: *u8, lpUsedDefaultChar: *bool) -> s32 #foreign kernel32;
+    
+    cmd_line = GetCommandLineW();
+    argc : s32;
+    wstr_args := CommandLineToArgvW(cmd_line, *argc);
+    heap := GetProcessHeap();
+    argv := cast (**u8) HeapAlloc(heap, 0, xx(size_of(*u8) * argc));
+    
+    for i : 0..argc-1
+    {
+        CP_UTF8 : u32 = 65001;
+        needed := WideCharToMultiByte(CP_UTF8, 0, wstr_args[i], -1, null, 0, null, null);
+        argv[i] = cast(*u8) HeapAlloc(heap, 0, xx needed);
+        written := WideCharToMultiByte(CP_UTF8, 0, wstr_args[i], -1, xx argv[i], needed, null, null);
+    }
+    
+    LocalFree(wstr_args);
+
+    return __system_entry_point(argc, argv);
+}
