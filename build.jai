@@ -44,7 +44,6 @@ run_custom_link_command :: (w: Workspace, m: *Message_Phase) {
 
     options := get_build_options(w);
 
-
     kit_root := find_windows_kit_root();
     vc_path, linker_path := find_visual_studio_in_a_ridiculous_garbage_way();
     if !kit_root    compiler_report(#file, #line, 0, "Unable to find Windows Kit root; can't compile.\n");
@@ -84,7 +83,8 @@ run_custom_link_command :: (w: Workspace, m: *Message_Phase) {
 
     array_add(*arguments, "-nodefaultlib");
 
-    for m.libraries array_add(*arguments, it);
+    for m.system_libraries array_add(*arguments, it);
+    for m.user_libraries   array_add(*arguments, it);
 
     success, exit_code, out, err := os_run_command(..arguments, capture_and_return_output=true);
 
