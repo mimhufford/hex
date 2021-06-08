@@ -163,7 +163,7 @@ initialise_font :: (size: s32) {
     // byte array, so I added an overload to font.jai
     font = GUI.load_font(font_bytes, size);
     char_height = cast(s32)(font.character_height * 1.3);
-    char_width  = cast(s32)GUI.get_string_width_in_pixels(font, " ");
+    char_width  = cast(s32)GUI.prepare_text(font, " ");
     assert(font != null);
 }
 
