@@ -159,9 +159,8 @@ draw_one_frame :: () {
 }
 
 initialise_font :: (size: s32) {
-    // @NOTE: there was no load_font which recieved a
-    // byte array, so I added an overload to font.jai
-    font = GUI.load_font(font_bytes, size);
+    GUI.ensure_fonts_are_initted();
+    font = GUI.get_font_at_size(font_bytes, size);
     char_height = cast(s32)(font.character_height * 1.3);
     char_width  = cast(s32)GUI.prepare_text(font, " ");
     assert(font != null);
