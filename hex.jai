@@ -151,6 +151,7 @@ draw_one_frame :: () {
     GUI.draw_text(font, centre_x, byte_y - char_height * 3, ifx cursor_index > loaded_file.count - 4 then "u32: -" else tprint("u32: %", <<cast(*u32)data), colour4);
     GUI.draw_text(font, centre_x, byte_y - char_height * 4, ifx cursor_index > loaded_file.count - 8 then "u64: -" else tprint("u64: %", <<cast(*u64)data), colour8);
 
+    GUI.draw_text(font, right_x, byte_y - char_height * 1, tprint("bin: %", formatInt(<<cast(*u8) data, base=2, minimum_digits=8)), colour1);
     GUI.draw_text(font, right_x, byte_y - char_height * 3, ifx cursor_index > loaded_file.count - 4 then "f32: -" else tprint("f32: %", formatFloat(<<cast(*float32)data, mode=.SCIENTIFIC)), colour4);
     GUI.draw_text(font, right_x, byte_y - char_height * 4, ifx cursor_index > loaded_file.count - 8 then "f64: -" else tprint("f64: %", formatFloat(<<cast(*float64)data, mode=.SCIENTIFIC)), colour8);
 
