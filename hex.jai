@@ -233,7 +233,7 @@ Input :: #import "Input";
 
 // @HACK: jai isn't currently set up to pipe cli arguments into a graphical
 // application, so this is used to grab the arguments and pipe them into the
-// standard format jai expects; now get_command_line_arguements() works as usual
+// standard format jai expects; now get_command_line_arguments() works as usual
 #program_export "wWinMain"
 windows_app_entry :: (hinstance : *void, hprev : *void, cmd_line : *u16, cmd_show : s32) -> s32 #c_call
 {
