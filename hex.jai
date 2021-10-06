@@ -69,10 +69,6 @@ main :: () {
         
         sleep_milliseconds(5);
     }
-
-    // @HACK: for some reason setting SUBSYTEM:WINDOWS makes the program not
-    // terminate fully, hacking this in for now until the root cause is found
-    ExitProcess(0);
 }
 
 load_file :: (file : string) {
