@@ -4,7 +4,7 @@ A simple GUI hex viewer developed as a teaching aid.
 ## Build Instructions
 
 ### Windows
-Run `jai build.jai`
+Run `jai hex.jai`
 
 ## Usage
 
@@ -20,5 +20,6 @@ Drop a file onto the executable and it will be loaded in Hex.
 
 ### Using Hex
 - `Up`, `Down`, `Left`, and `Right` move the cursor
-- `Pg Up` and `Pg Down` move the view
-- `Space` switch between visualisation modes
+- `Pg Up`, `Pg Down`, and `Mouse Wheel` move the view
+- `Space` switches between visualisation modes
+- Drop a file on the window to load it
