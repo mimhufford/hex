@@ -22,7 +22,7 @@ visualisation := 0; // 0, 1, 2, 4, or 8
 main :: () {
     args := get_command_line_arguments();
     file_path := ifx args.count > 1 then args[1] else args[0]; 
-    loaded_file = read_entire_file(file_path);
+    load_file(file_path);
     font_size := 22;
     if args.count > 2 {
         val, ok := to_integer(args[2]);
@@ -36,14 +36,16 @@ main :: () {
     // @NOTE: create_window does not expose parameters for the window style.
     // I changed WINDOWED_STYLE in windows.jai to WS_OVERLAPPEDWINDOW ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME;
     window = create_window(window_width, window_height, "Hex", background_color_rgb = <<(cast(*[3]float)(*black)));
+    DragAcceptFiles(window, cast(BOOL) true);
     GUI.simp_init(window, window_width, window_height, window_width, window_height);
 
     while !quit {
         Input.update_window_events();
         
         for Input.events_this_frame {
-            if it.type == .QUIT then quit = true;
-            if it.type != .KEYBOARD continue;
+            if it.type == .QUIT                  quit = true;
+            if it.type == .DRAG_AND_DROP_FILES   load_file(it.files[0]);
+            if it.type != .KEYBOARD              continue;
             if it.key_pressed && it.key_code == .ESCAPE      quit = true;
             if it.key_pressed && it.key_code == .SPACEBAR    switch_visualisation();
             if it.key_pressed && it.key_code == .PAGE_UP     scroll(-1);
@@ -68,8 +70,15 @@ main :: () {
 
     // @HACK: for some reason setting SUBSYTEM:WINDOWS makes the program not
     // terminate fully, hacking this in for now until the root cause is found
-    #import "Windows";
     ExitProcess(0);
+}
+
+load_file :: (file : string) {
+    loaded_file = read_entire_file(file);
+    row_offset = 0;
+    cursor_col = 0;
+    cursor_row = 0;
+    dirty = true;
 }
 
 draw_one_frame :: () {
@@ -225,6 +234,7 @@ switch_visualisation :: () {
 
 GUI  :: #import "Simp";
 Input :: #import "Input";
+#import "Windows";
 #import "Window_Creation";
 #import "Basic";
 #import "String";
