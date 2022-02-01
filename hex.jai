@@ -39,7 +39,7 @@ main :: () {
     // I changed WINDOWED_STYLE in windows.jai to WS_OVERLAPPEDWINDOW ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME;
     window = create_window(window_width, window_height, "Hex", background_color_rgb = <<(cast(*[3]float)(*black)));
     DragAcceptFiles(window, cast(BOOL) true);
-    GUI.simp_init(window, window_width, window_height, window_width, window_height);
+    GUI.set_render_target(window);
 
     while !quit {
         Input.update_window_events();
@@ -80,7 +80,7 @@ load_file :: (file : string) {
 }
 
 draw_one_frame :: () {
-    GUI.update_window(window, window_width, window_height, window_width, window_height);
+    GUI.update_window(window);
     GUI.clear_render_target(black.x, black.y, black.z, black.w);
     GUI.set_shader_for_color();
 
@@ -110,7 +110,7 @@ draw_one_frame :: () {
             if index >= loaded_file.count break;
             byte := loaded_file[index];
             text := tprint("%", byte);
-            to_upper(text);
+            to_upper_in_place(text);
             colour := white;
             if !visualisation && index == cursor_index colour = red;
             if index >= cursor_index && index - cursor_index < visualisation colour = red;
@@ -138,7 +138,7 @@ draw_one_frame :: () {
     right_x := window_padding + char_width * 54;
     data := loaded_file.data + row_offset*16 + cursor_row*16 + cursor_col; 
     address := tprint("%", row_offset*16 + cursor_row*16 + cursor_col);
-    to_upper(address);
+    to_upper_in_place(address);
     byte_info := tprint("Inspector for address 0x%", address);
     GUI.draw_text(font, left_x, byte_y, byte_info, white);
     format_int.base = 10;
