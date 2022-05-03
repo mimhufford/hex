@@ -1,30 +1,48 @@
+// Font information used for layouting
 font: *GUI.Dynamic_Font;
 char_height: s32;
 char_width:  s32;
-window: Window_Type;
-window_width  : s32;
-window_height : s32;
-window_padding : s32;
+
+// Window information
+window               : Window_Creation.Window_Type;
+window_width         : s32;
+window_height        : s32;
+window_padding       : s32;
+window_needs_repaint := true;
+
+// The contents of the currently loaded file
 loaded_file : string;
+
+// Colours constants used in the application
 black :: Vector4.{0.153, 0.157, 0.133, 1};
 white :: Vector4.{0.973, 0.973, 0.949, 1};
 grey  :: Vector4.{0.459, 0.443, 0.369, 1};
 red   :: Vector4.{0.976, 0.149, 0.447, 1};
+
+// Cursor location info
 row_offset := 0;
 cursor_col := 0;
 cursor_row := 0;
+
+// Look-up table for converting decimal value to lower hexidecimal
 lower_hex :: string.["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
-mouse_wheel_buffer : s64;
-dirty := true;
-quit := false;
+
+// How many bytes are we currently highlighting
 visualisation := 0; // 0, 1, 2, 4, or 8
-font_bytes :: #run add_global_data(xx read_entire_file("SourceCodePro-Regular.ttf"), .READ_ONLY);
-#run disable_runtime_console();
+
+// Bake the font into the executable at compile time
+font_bytes :: #run Compiler.add_global_data(xx read_entire_file("SourceCodePro-Regular.ttf"), .READ_ONLY);
+
+// On windows launching the exe still opens a console window behind the
+// graphical application, here we disable that at compile time
+#run Windows_Resources.disable_runtime_console();
 
 main :: () {
     args := get_command_line_arguments();
+
     file_path := ifx args.count > 1 then args[1] else args[0]; 
     load_file(file_path);
+
     font_size := 22;
     if args.count > 2 {
         val, ok := to_integer(args[2]);
@@ -32,15 +50,18 @@ main :: () {
         font_size = clamp(font_size, 8, 50);
     }
     initialise_font(cast(s32)font_size);
+
     window_padding = char_width;
     window_width = window_padding * 2 + char_width * 74;
     window_height = window_padding * 2 + char_height * 26;
+
     // @NOTE: create_window does not expose parameters for the window style.
     // I changed WINDOWED_STYLE in windows.jai to WS_OVERLAPPEDWINDOW ^ WS_MAXIMIZEBOX ^ WS_THICKFRAME;
-    window = create_window(window_width, window_height, "Hex", background_color_rgb = <<(cast(*[3]float)(*black)));
-    DragAcceptFiles(window, cast(BOOL) true);
+    window = Window_Creation.create_window(window_width, window_height, "Hex", background_color_rgb = <<(cast(*[3]float)(*black)));
+    Windows.DragAcceptFiles(window, cast(Windows.BOOL) true);
     GUI.set_render_target(window);
 
+    quit := false;
     while !quit {
         Input.update_window_events();
         
@@ -49,7 +70,7 @@ main :: () {
             if it.type == .DRAG_AND_DROP_FILES   load_file(it.files[0]);
             if it.type != .KEYBOARD              continue;
             if it.key_pressed && it.key_code == .ESCAPE      quit = true;
-            if it.key_pressed && it.key_code == .SPACEBAR    switch_visualisation();
+            if it.key_pressed && it.key_code == .SPACEBAR    switch_visualisation_mode();
             if it.key_pressed && it.key_code == .PAGE_UP     scroll(-1);
             if it.key_pressed && it.key_code == .PAGE_DOWN   scroll( 1);
             if it.key_pressed && it.key_code == .ARROW_DOWN  move_cursor( 0,  1);
@@ -58,12 +79,12 @@ main :: () {
             if it.key_pressed && it.key_code == .ARROW_RIGHT move_cursor( 1,  0);
         }
 
-        mouse_wheel_buffer += Input.mouse_delta_z;
+        mouse_wheel_buffer := Input.mouse_delta_z;
         while mouse_wheel_buffer >  100 { scroll(-1); mouse_wheel_buffer -= 100; }
         while mouse_wheel_buffer < -100 { scroll( 1); mouse_wheel_buffer += 100; }
 
-        if !quit && dirty {
-            dirty = false;
+        if !quit && window_needs_repaint {
+            window_needs_repaint = false;
             draw_one_frame();
         }
         
@@ -76,7 +97,7 @@ load_file :: (file : string) {
     row_offset = 0;
     cursor_col = 0;
     cursor_row = 0;
-    dirty = true;
+    window_needs_repaint = true;
 }
 
 draw_one_frame :: () {
@@ -175,17 +196,18 @@ initialise_font :: (size: s32) {
 }
 
 scroll :: (offset: s8) {
-    dirty = true;
+    window_needs_repaint = true;
     row_offset += offset;
     row_offset = clamp(row_offset, 0, (loaded_file.count-1) / 16);
     
-    // we could scroll to the end of the file, so we 
-    // need to make sure cursor clamping happens
+    // we could scroll to the end of the file with the cursor somewhere on the right,
+    // but the last row of bytes might only have data on the left, so we need to make
+    // sure cursor clamping happens, the easiest way is to pretend to move the cursor
     move_cursor(0, 0);
 }
 
 move_cursor :: (dx: s8, dy: s8) {
-    dirty = true;
+    window_needs_repaint = true;
 
     can_go_left := cursor_row > 0 || row_offset > 0;
     max_row_at_current_scroll := min((loaded_file.count-1) / 16 - row_offset, 19);
@@ -210,7 +232,7 @@ move_cursor :: (dx: s8, dy: s8) {
         if (cursor_row + row_offset < (loaded_file.count-1) / 16) scroll(1);
     }
 
-    // we could be on the last row which could have fewer than
+    // We could be on the last row which could have fewer than
     // 16 bytes, so back up until we hit the last byte
     index := cursor_row*16 + row_offset*16 + cursor_col;
     while index >= loaded_file.count {
@@ -219,8 +241,8 @@ move_cursor :: (dx: s8, dy: s8) {
     }
 }
 
-switch_visualisation :: () {
-    dirty = true;
+switch_visualisation_mode :: () {
+    window_needs_repaint = true;
     if visualisation == {
         case 0; visualisation = 1;
         case 1; visualisation = 2;
@@ -230,13 +252,16 @@ switch_visualisation :: () {
     }
 }
 
-GUI  :: #import "Simp";
-Input :: #import "Input";
-#import "Compiler";
-#import "Windows";
-#import "Windows_Resources";
-#import "Window_Creation";
+// Common modules imported into global namespace
 #import "Basic";
-#import "String";
 #import "File";
 #import "Math";
+#import "String";
+
+// Less common modules imported with an alias
+GUI :: #import "Simp";
+Input :: #import "Input";
+Compiler :: #import "Compiler";
+Windows :: #import "Windows";
+Windows_Resources :: #import "Windows_Resources";
+Window_Creation :: #import "Window_Creation";
