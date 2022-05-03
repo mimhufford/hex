@@ -1,3 +1,9 @@
+/*
+    A graphical hex file viewer
+    Author: Mim Hufford
+    Date:   03 May 2022
+*/
+
 // Font information used for layouting
 font: *GUI.Dynamic_Font;
 char_height: s32;
